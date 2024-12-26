@@ -1,0 +1,21 @@
+{
+  "name": "nakniki-web-server",
+  "version": "1.0.0",
+  "description": "The web server of the Advanced Programming Netflix project.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "SET NODE_ENV=local && node src/app.js"
+  },
+  "keywords": [],
+  "author": "Avi Eden Kfir",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "custom-env": "^2.0.6",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.2"
+  }
+}
