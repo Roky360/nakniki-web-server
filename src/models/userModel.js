@@ -21,6 +21,13 @@ const UserModel = new Schema({
     profile_pic : {
         type: String,
         required: true
+    },
+    recom_id : {
+      type : Number
+    },
+    first_watch : {
+        type : Boolean,
+        default : true
     }
 });
 

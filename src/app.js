@@ -4,7 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const {env} = require("custom-env");
 
-const {appRouter} = require('./routes/appRouter');
+const appRouter = require('./routes/appRouter');
 
 
 // check app variables

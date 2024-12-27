@@ -1,9 +1,16 @@
 const User = require('../models/userModel');
+const recommendationService = require('../services/recommend/recommendationService');
 
 const createUser = async (username, password, email, profile_pic) => {
     // try to create new user
     try {
-        const user = new User({username, password, email, profile_pic});
+        const user = new User({
+            username,
+            password,
+            email,
+            profile_pic,
+            recom_id : await recommendationService.generateRecomId()
+        });
         return await user.save();
     }
     catch (error) { // if there was problem trow the error
