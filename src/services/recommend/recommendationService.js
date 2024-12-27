@@ -1,6 +1,6 @@
 const User = require('../../models/userModel');
 const recomModel = require('../../models/recommendationModel');
-const {sendRequest} = require('recommendationSendingService');
+const {sendRequest} = require('./recommendationSendingService');
 
 const globalCounterName = "global_recom_counter";
 
@@ -11,7 +11,7 @@ exports.generateRecomId = async () => {
     const counterDoc = await recomModel.findOneAndUpdate(
         {name: globalCounterName},
         {$inc: {value: 1}},
-        {new: true}
+        {new: true, upsert: true, setDefaultsOnInsert: true}
     );
 
     return counterDoc.value;
