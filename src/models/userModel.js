@@ -28,6 +28,10 @@ const UserModel = new Schema({
     first_watch : {
         type : Boolean,
         default : true
+    },
+    movies : {
+        type : [Number],
+        default : []
     }
 });
 
