@@ -2,11 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { env } = require("custom-env");
+const {env} = require("custom-env");
 
-const Users = require('./routes/userRoute');
-const tokens = require("./routes/tokenRoute");
-const category = require("./routes/categoryRoute");
+const {appRouter} = require('./routes/appRouter');
+
 
 // check app variables
 env(process.env.NODE_ENV, "./config");
@@ -31,9 +30,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json());
 
 // set app endpoints
-// app.use(...)
-app.use('/users', Users);
-app.use('/tokens', tokens);
-app.use('/categories', category);
+app.use('/api', appRouter);
 
+
+console.log(`Running on http://localhost:${process.env.PORT}`);
 app.listen(process.env.PORT);
