@@ -46,6 +46,13 @@ exports.markAsWatched = async (userId, movieId) => {
     }
 }
 
+/**
+ * Gets movie recommendations from the server and returns an object with the status code and, if request was successful,
+ * an array of the recommended movies.
+ * @param userId
+ * @param movieId
+ * @returns {Promise<{code, payload}>}
+ */
 exports.recommend = async (userId, movieId) => {
     const res = await sendRequest(`GET ${userId} ${movieId}`);
 

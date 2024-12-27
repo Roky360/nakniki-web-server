@@ -21,7 +21,7 @@ exports.sendRequest = async (request) => {
 /**
  * Parse the response that the recommendation server returns as http response.
  * @param res Raw response string.
- * @returns {{code: number, payload}}
+ * @returns {{status, payload}}
  */
 const parseResponse = (res) => {
     // regex pattern to match the status line (like "200 OK")
@@ -42,7 +42,7 @@ const parseResponse = (res) => {
     }
 
     return {
-        code: statusCode,
+        status: statusCode,
         payload: payload
     };
 }
