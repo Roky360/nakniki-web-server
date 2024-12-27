@@ -12,7 +12,24 @@ const createUser = async (username, password, email, profile_pic) => {
 };
 
 const getUserById = async (id) => {
-    return await User.findById(id);
+    try {
+        // try to get the user by the id
+        const user = await User.findById(id);
+        if (!user) {
+            // if the user is not exist return null
+            return null;
+        }
+        // return the user
+        return user;
+    } catch (error) {
+        // if the error because the user is not exist
+        if (error.name === 'CastError' && error.kind === 'ObjectId') {
+            // return null
+            return null;
+        }
+        // if there was error throw it
+        throw new Error('Error fetching user by ID: ' + error.message);
+    }
 };
 
 const isUserExist = async (username, password) => {

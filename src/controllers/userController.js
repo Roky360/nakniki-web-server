@@ -13,19 +13,24 @@ const createUser = async (req, res) => {
         res.status(201).json(user);
     } catch (error) {
         // if there was error return error message
-        res.status(500).json({ errors: [error.message] });
+        res.status(400).json({ errors: [error.message] });
     }
 };
 
 const getUserById = async (req, res) => {
-    // get the user by the id from the service
-    const user = await userService.getUserById(req.params.id);
-    if (!user) {
-        // is the user isnt exist return status 404 not found
-        return res.status(404).json({ errors: ['user not found'] });
+    try {
+        // get the user by his ID from the service
+        const user = await userService.getUserById(req.params.id);
+        if (user == null) {
+            // if the user not exist return not found
+            return res.status(404).json({ errors: ['User not found'] });
+        }
+        // if the user exists return the user
+        res.status(200).json(user);
+    } catch (error) {
+        // if there was error return error message
+        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
-    // return the user
-    res.status(200).json(user);
 };
 
 const isUserExist = async (req, res) => {
@@ -47,7 +52,7 @@ const isUserExist = async (req, res) => {
         }
     } catch (error) {
         // if there was error return error message
-        return res.status(500).json({ errors: ['Internal server error: ' + error.message] });
+        return res.status(400).json({ errors: ['Internal server error: ' + error.message] });
     }
 };
 
