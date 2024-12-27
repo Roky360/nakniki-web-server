@@ -1,8 +1,9 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import mongoose from "mongoose";
-import {env} from "custom-env";
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const { env } = require("custom-env");
+const Users = require('./routes/user');
 
 // check app variables
 env(process.env.NODE_ENV, "./config");
@@ -28,5 +29,6 @@ app.use(express.json());
 
 // set app endpoints
 // app.use(...)
+app.use('/users', Users);
 
 app.listen(process.env.PORT);
