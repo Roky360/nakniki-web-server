@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { env } = require("custom-env");
-const Users = require('./routes/user');
+const Users = require('./routes/userRoute');
+const tokens = require("./routes/tokenRoute");
 
 // check app variables
 env(process.env.NODE_ENV, "./config");
@@ -30,5 +31,6 @@ app.use(express.json());
 // set app endpoints
 // app.use(...)
 app.use('/users', Users);
+app.use('/tokens', tokens);
 
 app.listen(process.env.PORT);
