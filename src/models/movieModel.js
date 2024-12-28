@@ -52,13 +52,15 @@ const MovieModel = new Schema({
         type: Number,
         required: true
     },
-    // RETURN HERE
     categories: [
         {
         type: mongoose.Schema.Types.ObjectId, // Reference Category model
         ref: 'categoryModel', // Name of the Category model
         }
-    ]
+    ],
+    recom_id : {
+        type : Number
+    }
 });
 
 module.exports = mongoose.model('movies', MovieModel, 'movies');

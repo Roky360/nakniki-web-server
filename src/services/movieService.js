@@ -1,6 +1,7 @@
 const Movie = require('../models/movieModel');
 const Category = require('../models/categoryModel');
 const CategoryService = require('../services/categoryService');
+const recommendationService = require('../services/recommend/recommendationService');
 
 /**
  * 
@@ -34,6 +35,7 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
             description,
             length,
             categories: categoryIds,
+            recom_id : await recommendationService.generateRecomId()
         });
 
         // Save and return the movie
