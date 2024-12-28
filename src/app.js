@@ -6,6 +6,10 @@ const {env} = require("custom-env");
 
 const appRouter = require('./routes/appRouter');
 
+const Users = require('./routes/userRoute');
+const tokens = require("./routes/tokenRoute");
+const category = require("./routes/categoryRoute");
+const movie = require("./routes/movieRoute");
 
 // check app variables
 env(process.env.NODE_ENV, "./config");
@@ -30,8 +34,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json());
 
 // set app endpoints
+// app.use(...)
+app.use('/users', Users);
+app.use('/tokens', tokens);
+app.use('/categories', category);
+app.use('/movies', movie);
 app.use('/api', appRouter);
-
 
 console.log(`Running on http://localhost:${process.env.PORT}`);
 app.listen(process.env.PORT);

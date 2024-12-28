@@ -23,6 +23,21 @@ const getAllCategories = async () => {
     }
 };
 
+/**
+ * Finds multiple categories by using their names, returns an array of categories ID
+ * @param {string, the names of the categories} names 
+ * @returns IDs of the categories (if they exist)
+ */
+const getCategoryByName = async (names) => {
+    try {
+        const categoryNames = [].concat(names || []);
+        const categories = await Category.find({ name: { $in: categoryNames } });
+        return categories;
+    } catch (error) {
+        throw new Error('Error fetching categories: ' + error.message);
+    }
+}
+
 const getCategoryById = async (categoryId) => {
     try {
         // try to get the category by the id
@@ -94,4 +109,4 @@ const deleteCategory = async (categoryId) => {
     }
 };
 
-module.exports = { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory };
+module.exports = { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory, getCategoryByName };
