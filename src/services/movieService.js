@@ -1,6 +1,6 @@
 const Movie = require('../models/movieModel');
 const Category = require('../models/categoryModel');
-const CategoryService = require('../services/categoryService');
+const categoryService = require('../services/categoryService');
 const recommendationService = require('../services/recommend/recommendationService');
 
 /**
@@ -11,22 +11,29 @@ const recommendationService = require('../services/recommend/recommendationServi
  * @param {Thumbnail, string for now} thumbnail 
  * @param {A quick descryption of the movie's plot, string} descryption 
  * @param {The length of the movie in minutes, number} length 
- * @param {The categories the movie belongs to, ex: horror or action, Category} categories 
+ * @param {The categories' IDs that the movie belongs to, ex: horror or action, Category[]} categories 
  * @returns 
  */
 const createMovie = async (name, published, actors, thumbnail, description, length, categories) => {
     try {
-        // Use the function from categoryService to find category IDs
-        const categoryDocs = await CategoryService.getCategoryByName(categories);
-        // If no valid categories were found, ERROR
-        if (categoryDocs.length === 0) {
+        // Validate the category IDs
+        const categoryDocs = await Promise.all(
+            categories.map(async (id) => await categoryService.getCategoryById(id))
+        );
+
+        // Returns an error if at least one category is incorrect, bad users deserve punishment >:D
+        const invalidCategories = categoryDocs.filter(category => category === null);
+        if (invalidCategories.length > 0) {
             return null;
         }
 
-        // Extract category IDs from the found documents
-        const categoryIds = categoryDocs.map(cat => cat._id);
-
-        // Create the movie with the resolved category IDs
+        const validCategories = categoryDocs.filter(category => category !== null);
+        if (validCategories.length === 0) {
+            return null;
+        }
+        // Saves the valid category IDs
+        const validCategoryIds = validCategories.map(category => category._id);
+        // Create the movie with the valid category IDs
         const movie = new Movie({
             name,
             published,
@@ -34,13 +41,12 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
             thumbnail,
             description,
             length,
-            categories: categoryIds,
+            categories: validCategoryIds,
             recom_id : await recommendationService.generateRecomId()
         });
-
-        // Save and return the movie
         return await movie.save();
-    } catch (error) {
+    } 
+    catch (error) {
         throw new Error('Error creating movie: ' + error.message);
     }
 };
@@ -95,7 +101,8 @@ const addCategoryToMovie = async (movieID, catID) => {
         // Save the updated movie
         await movie.save();
         return { message: 'Category added successfully', movie };
-    } catch (error) {
+    } 
+    catch (error) {
         throw new Error('Error adding category to movie: ' + error.message);
     }
 };
