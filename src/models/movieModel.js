@@ -15,7 +15,7 @@ const isValidDate = (value) => {
 
 
 // define the movie
-const UserModel = new Schema({
+const MovieModel = new Schema({
     name : {
         type: String,
         required: true,
