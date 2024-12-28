@@ -1,4 +1,5 @@
 const Category = require('../models/categoryModel');
+const Movie = require('../models/movieModel');
 
 const createCategory = async (name, promoted) => {
     try {
@@ -22,21 +23,6 @@ const getAllCategories = async () => {
         throw new Error('Error get all categories: ' + error.message);
     }
 };
-
-/**
- * Finds multiple categories by using their names, returns an array of categories ID
- * @param {string, the names of the categories} names 
- * @returns IDs of the categories (if they exist)
- */
-const getCategoryByName = async (names) => {
-    try {
-        const categoryNames = [].concat(names || []);
-        const categories = await Category.find({ name: { $in: categoryNames } });
-        return categories;
-    } catch (error) {
-        throw new Error('Error fetching categories: ' + error.message);
-    }
-}
 
 const getCategoryById = async (categoryId) => {
     try {
@@ -99,6 +85,12 @@ const deleteCategory = async (categoryId) => {
             return null;
         }
 
+        // delete all the categories is the movies
+        await Movie.updateMany(
+            { categories: categoryId },
+            { $pull: { categories: categoryId } }
+        );
+
         // delete the category
         await category.deleteOne();
         return category;
@@ -109,4 +101,4 @@ const deleteCategory = async (categoryId) => {
     }
 };
 
-module.exports = { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory, getCategoryByName };
+module.exports = { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory };
