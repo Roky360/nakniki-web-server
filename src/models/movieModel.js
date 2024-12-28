@@ -44,7 +44,7 @@ const MovieModel = new Schema({
         type: String,
         required: true
     },
-    descryption: {
+    description: {
         type: String,
         required: true
     },
@@ -53,7 +53,7 @@ const MovieModel = new Schema({
         required: true
     },
     // RETURN HERE
-    category: [
+    categories: [
         {
         type: mongoose.Schema.Types.ObjectId, // Reference Category model
         ref: 'categoryModel', // Name of the Category model

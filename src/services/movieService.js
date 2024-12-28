@@ -1,5 +1,6 @@
 const Movie = require('../models/movieModel');
 const Category = require('../models/categoryModel');
+const CategoryService = require('../services/categoryService');
 
 /**
  * 
@@ -12,14 +13,32 @@ const Category = require('../models/categoryModel');
  * @param {The categories the movie belongs to, ex: horror or action, Category} categories 
  * @returns 
  */
-const createMovie = async (name, published, actors, thumbnail, descryption, length, categories) => {
-    // try to create new movie
+const createMovie = async (name, published, actors, thumbnail, description, length, categories) => {
     try {
-        const movie = new Movie({name, published, actors, thumbnail, descryption, length, categories});
+        // Use the function from categoryService to find category IDs
+        const categoryDocs = await CategoryService.getCategoryByName(categories);
+        // If no valid categories were found, ERROR
+        if (categoryDocs.length === 0) {
+            return null;
+        }
+
+        // Extract category IDs from the found documents
+        const categoryIds = categoryDocs.map(cat => cat._id);
+
+        // Create the movie with the resolved category IDs
+        const movie = new Movie({
+            name,
+            published,
+            actors: actors.split(',').map(actor => actor.trim()),
+            thumbnail,
+            description,
+            length,
+            categories: categoryIds,
+        });
+
+        // Save and return the movie
         return await movie.save();
-    }
-    catch (error) { 
-        // In case of an error
+    } catch (error) {
         throw new Error('Error creating movie: ' + error.message);
     }
 };

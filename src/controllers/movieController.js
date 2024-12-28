@@ -1,9 +1,9 @@
-const userService = require('../services/movieService');
+const movieService = require('../services/movieService');
 const categoryService = require('../services/categoryService');
 
 /**
  * POST
- * @param {name, published, actors, thumbnail, descryption, length, categories} req 
+ * @param {name, published, actors, thumbnail, description, length, categories} req 
  * @param {status} res 
  */
 const createMovie = async (req, res) => {
@@ -14,15 +14,18 @@ const createMovie = async (req, res) => {
             req.body.published,
             req.body.actors,
             req.body.thumbnail,
-            req.body.descryption,
+            req.body.description,
             req.body.length,
             req.body.categories
         );
+        if (movie === null) {
+            return res.status(404).json({message: 'Invalid input!'});
+        }
         // Return status 201 created
-        res.status(201).json(movie);
+        return res.status(201).json(movie);
     } catch (error) {
         // In case of an error, return status 400 and the error msg
-        res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({ errors: [error.message] });
     }
 };
 
