@@ -1,9 +1,21 @@
 const Movie = require('../models/movieModel');
+const Category = require('../models/categoryModel');
 
+/**
+ * 
+ * @param {The category's name, string} name 
+ * @param {The category's release date, DATE - dd/mm/yyyy format} published 
+ * @param {The performing actors, string} actors 
+ * @param {Thumbnail, string for now} thumbnail 
+ * @param {A quick descryption of the movie's plot, string} descryption 
+ * @param {The length of the movie in minutes, number} length 
+ * @param {The categories the movie belongs to, ex: horror or action, Category} categories 
+ * @returns 
+ */
 const createMovie = async (name, published, actors, thumbnail, descryption, length, categories) => {
     // try to create new movie
     try {
-        const movie = new Movie({});
+        const movie = new Movie({name, published, actors, thumbnail, descryption, length, categories});
         return await movie.save();
     }
     catch (error) { 
@@ -12,45 +24,59 @@ const createMovie = async (name, published, actors, thumbnail, descryption, leng
     }
 };
 
-const getMovieByID = async (id) => {
+/**
+ * @param {the category's ID} catID 
+ * @returns up to 20 random movies from that category
+ */
+
+const get20MoviesByCategory = async (catID) => {
     try {
-        // Get a movie using its ID
-        const movie = await Movie.findById(id);
+        // If the category does not exist, or is not promoted, do not show it
+        const category = await Category.findById(catID);
+        if (!category || !category.promoted) {
+            return [];
+        }
+
+        // Get 20 random movies of that category
+        const movies = await Movie.aggregate([
+            { $match: { categories: catID } },
+            { $sample: { size: 20 } }
+        ]);
+
+        return movies;
+        // In case the code died somehow
+    } catch (error) {
+        throw new Error('Error getting movies: ' + error.message);
+    }
+};
+
+/**
+ * @param {The movie's ID} movieID 
+ * @param {The category's ID} catID 
+ * @returns a message if the operation succeeded, error if it failed, null if it had a logic error
+ */
+const addCategoryToMovie = async (movieID, catID) => {
+    try {
+        // Find the movie by ID
+        const movie = await Movie.findById(movieID);
         if (!movie) {
-            // In case there is no movie with such ID
             return null;
         }
-        return movie;
-    } catch (error) {
-        // in case the movie does not exist:
-        if (error.name === 'CastError' && error.kind === 'ObjectId') {
-            // return null
+
+        // Check if the category already exists in the movie's categories
+        if (movie.categories.includes(catID)) {
             return null;
         }
-        // Otherwise:
-        throw new Error('Error fetching movie by ID: ' + error.message);
-    }
-};
 
-const isMovieExist = async (name) => {
-    try {
-        // Try to find a movie by its name
-        const movie = await Movie.findOne({name});
-        return movie !== null;
+        // Add the category to the movie's categories array
+        movie.categories.push(catID);
+
+        // Save the updated movie
+        await movie.save();
+        return { message: 'Category added successfully', movie };
     } catch (error) {
-        // In case of an error
-        throw new Error('Error checking movie existence: ' + error.message);
+        throw new Error('Error adding category to movie: ' + error.message);
     }
 };
 
-const getMovieByName = async (name) => {
-    try {
-        const movie = await Movie.findOne({name});
-        return movie;
-    } catch (error) {
-        // In case of an error
-        throw new Error('Error checking movie existence: ' + error.message);
-    }
-};
-
-module.exports = {createMovie, getMovieByID, isMovieExist, getMovieByName};
+module.exports = {createMovie, get20MoviesByCategory, addCategoryToMovie};

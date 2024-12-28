@@ -7,6 +7,7 @@ const { env } = require("custom-env");
 const Users = require('./routes/userRoute');
 const tokens = require("./routes/tokenRoute");
 const category = require("./routes/categoryRoute");
+const movie = require("./routes/movieRoute");
 
 // check app variables
 env(process.env.NODE_ENV, "./config");
@@ -35,5 +36,6 @@ app.use(express.json());
 app.use('/users', Users);
 app.use('/tokens', tokens);
 app.use('/categories', category);
+app.use('/movies', movie);
 
 app.listen(process.env.PORT);

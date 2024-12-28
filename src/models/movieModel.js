@@ -52,9 +52,13 @@ const UserModel = new Schema({
         type: Number,
         required: true
     },
-    category : {
-        type: categoryModel,
-    },
+    // RETURN HERE
+    category: [
+        {
+        type: mongoose.Schema.Types.ObjectId, // Reference Category model
+        ref: 'categoryModel', // Name of the Category model
+        }
+    ]
 });
 
 module.exports = mongoose.model('movies', MovieModel, 'movies');
