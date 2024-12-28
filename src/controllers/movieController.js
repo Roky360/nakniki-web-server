@@ -65,7 +65,7 @@ const getMoviesByCategories = async (req, res) => {
 
         // Get up to 20 movies of each categ, using the function from movieService
         const moviesByCategoryPromises = promotedCategories.map(async (category) => {
-            const movies = await get20MoviesByCategory(category._id);
+            const movies = await movieService.get20MoviesByCategory(category._id);
             return { category: category.name, movies };
         });
         // Wait for all the searches to finish
