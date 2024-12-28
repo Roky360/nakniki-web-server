@@ -2,7 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { env } = require("custom-env");
+const {env} = require("custom-env");
+
+const appRouter = require('./routes/appRouter');
 
 const Users = require('./routes/userRoute');
 const tokens = require("./routes/tokenRoute");
@@ -37,5 +39,7 @@ app.use('/users', Users);
 app.use('/tokens', tokens);
 app.use('/categories', category);
 app.use('/movies', movie);
+app.use('/api', appRouter);
 
+console.log(`Running on http://localhost:${process.env.PORT}`);
 app.listen(process.env.PORT);
