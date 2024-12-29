@@ -1,4 +1,5 @@
 const User = require('../../models/userModel');
+const Movie = require('../../models/movieModel');
 const recomModel = require('../../models/recommendationModel');
 const {sendRequest} = require('./recommendationSendingService');
 
@@ -30,21 +31,26 @@ exports.markAsWatched = async (userId, movieId) => {
     if (userDoc === null) {
         throw new Error('User does not exist');
     }
-    // TODO: make sure the movie exist, similar to this ^
+    const movieDoc = Movie.findById(movieId);
+    if (movieDoc === null) {
+        throw new Error('Movie does not exist');
+    }
+    // if the movie is already in the user's watched list - return 400 bad request
+    if (userDoc.get('movies').contains(movieId)) {
+        throw new Error('Movie already watched by this user');
+    }
 
-    const userRecomid = userDoc.get('recom_id');
-    // TODO: get movie recom id the same way
-    const movieRecomId = null;
-
+    const userRecomId = userDoc.get('recom_id');
+    const movieRecomId = movieDoc.get('recom_id');
     try {
         // decide whether to send POST or PATCH request
         if (userDoc.get('first_watch') === true) {
             // it's the user's first watch - POST
             userDoc.updateOne({'first_watch': false});
-            await sendRequest(`POST ${userRecomid} ${movieRecomId}`);
+            await sendRequest(`POST ${userRecomId} ${movieRecomId}`);
         } else {
             // PATCH
-            await sendRequest(`PATCH ${userRecomid} ${movieRecomId}`);
+            await sendRequest(`PATCH ${userRecomId} ${movieRecomId}`);
         }
         // add the movie id to the watched array of the user
         await userDoc.updateOne({$push: {'movies': movieId}});
@@ -65,14 +71,15 @@ exports.markAsUnwatched = async (userId, movieId) => {
     if (userDoc === null) {
         throw new Error('User does not exist');
     }
-    // TODO: make sure the movie exist, similar to this ^
+    const movieDoc = Movie.findById(movieId);
+    if (movieDoc === null) {
+        throw new Error('Movie does not exist');
+    }
 
-    const userRecomid = userDoc.get('recom_id');
-    // TODO: get movie recom id the same way
-    const movieRecomId = null;
-
+    const userRecomId = userDoc.get('recom_id');
+    const movieRecomId = movieDoc.get('recom_id');
     try {
-        await sendRequest(`DELETE ${userRecomid} ${movieRecomId}`);
+        await sendRequest(`DELETE ${userRecomId} ${movieRecomId}`);
         await userDoc.updateOne({$pull: {'movies': movieId}});
     } catch (err) {
     }

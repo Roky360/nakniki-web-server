@@ -1,4 +1,5 @@
-const sock = new WebSocket(`ws://${process.env.RECOM_URL}`);
+const WebSocket = require('ws');
+let sock = null;
 
 /**
  * Sends a request to the recommendation server and returns its response
@@ -6,15 +7,30 @@ const sock = new WebSocket(`ws://${process.env.RECOM_URL}`);
  * @param request String to send
  */
 exports.sendRequest = async (request) => {
-    return new Promise((resolve, reject) => {
-        if (sock.CLOSED) {
-            reject("Connection is closed");
+    return new Promise(async (resolve, reject) => {
+        if (sock === null || sock.state !== 'open') {
+            try {
+                await connectToRecomServer();
+            } catch (err) {
+                reject("Can't connect to server");
+            }
         }
 
         sock.send(request);
         sock.onmessage = (event) => {
             resolve(parseResponse(event.data));
         };
+    });
+}
+
+const connectToRecomServer = async () => {
+    return new Promise((resolve, reject) => {
+        try {
+            sock = new WebSocket(`ws://${process.env.RECOM_URL}`);
+            sock.onopen(_ => resolve(true));
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 

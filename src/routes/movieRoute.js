@@ -1,9 +1,13 @@
 const express = require('express');
-var router = express.Router();
+const router = express.Router();
 
 const movieController = require('../controllers/movieController');
 
-router.route('/').post(movieController.createMovie);
-router.route('/').get(movieController.getMoviesByCategories);
+router.route('/')
+    .post(movieController.createMovie)
+    .get(movieController.getMoviesByCategories);
+
+router.route('/search/:query')
+    .get(movieController.searchMovies);
 
 module.exports = router;

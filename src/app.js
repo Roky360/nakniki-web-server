@@ -29,7 +29,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json());
 
 // set app endpoints
-// app.use(...)
 app.use('/api', appRouter);
 
 console.log(`Running on http://localhost:${process.env.PORT}`);

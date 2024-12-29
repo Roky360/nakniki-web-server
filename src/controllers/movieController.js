@@ -77,4 +77,19 @@ const getMoviesByCategories = async (req, res) => {
     }
 };
 
-module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories};
+/**
+ * GET movies/:query
+ *
+ * Returns a list of all movies that matches the given query.
+ */
+const searchMovies = async (req, res) => {
+    const query = req.params.query;
+    try {
+        const results = await movieService.searchMovies(query);
+        res.status(200).json(results);
+    } catch (err) {
+        res.status(400).json({ errors: [err] });
+    }
+}
+
+module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories, searchMovies};
