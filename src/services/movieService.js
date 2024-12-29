@@ -78,36 +78,6 @@ const get20MoviesByCategory = async (catID) => {
 };
 
 /**
- * @param {The movie's ID} movieID 
- * @param {The category's ID} catID 
- * @returns a message if the operation succeeded, error if it failed, null if it had a logic error
- */
-const addCategoryToMovie = async (movieID, catID) => {
-    try {
-        // Find the movie by ID
-        const movie = await Movie.findById(movieID);
-        if (!movie) {
-            return null;
-        }
-
-        // Check if the category already exists in the movie's categories
-        if (movie.categories.includes(catID)) {
-            return null;
-        }
-
-        // Add the category to the movie's categories array
-        movie.categories.push(catID);
-
-        // Save the updated movie
-        await movie.save();
-        return { message: 'Category added successfully', movie };
-    } 
-    catch (error) {
-        throw new Error('Error adding category to movie: ' + error.message);
-    }
-};
-
-/**
  * 
  * @param {The movie's ID, string} id 
  * @returns movie, null, or error, depending on the input and whether the function suceeded
@@ -158,4 +128,32 @@ const deleteMovie = async (id) => {
     }
 }
 
-module.exports = {createMovie, get20MoviesByCategory, addCategoryToMovie, getMovieById, deleteMovie};
+/**
+ * Swaps a movie's settings with new ones, or creates an altogether movie if the requested ID does not exist
+ * @param {the movie's ID, string} id 
+ * @param {movie schema, all fields that belong to a movie} movieData 
+ * @returns movie, null or error, depending on the result
+ */
+const putMovie = async (id, movieData) => {
+    try { 
+
+        const categoryDocs = await Promise.all(newMovieData.categories.map(id => Category.findById(id)));
+        if (categoryDocs.includes(null)) {
+            return null;
+        }
+
+        const newMovie = await Movie.findOneAndReplace(
+            { _id: id }, 
+            movieData,          
+                { new: true, upsert: true }
+        );
+
+        return newMovie; 
+    }
+    catch (error) {
+        throw new Error('Error putting movie: ' + error.message);
+    }
+};
+
+
+module.exports = {createMovie, get20MoviesByCategory, getMovieById, deleteMovie, putMovie};

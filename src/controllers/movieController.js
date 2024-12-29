@@ -30,28 +30,6 @@ const createMovie = async (req, res) => {
 };
 
 /**
- * Adds category to movie using movieService
- * @param {movieID, categoryID} req 
- * @param {status} res 
- * @returns 
- */
-const addCategoryToMovie = async (req, res) => {
-    const {movieID, catID} = req.body
-
-    try {
-        const result = await movieService.addCategoryToMovie(movieID, catID);
-        if (result == null) {
-            return res.status(404).json({ errors: ['Invalid request'] });
-        }
-        return res.status(200).json({});
-    }
-
-    catch (error) {
-        return res.status(400).json({ errors: ['Internal server error: ' + error.message] })
-    }
-}
-
-/**
  * GET
  * Showcase up to 20 random movies from each category which is promoted
  * @param {} req 
@@ -70,7 +48,7 @@ const getMoviesByCategories = async (req, res) => {
         });
         // Wait for all the searches to finish
         const moviesByCategory = await Promise.all(moviesByCategoryPromises);
-        res.status(200).json(moviesByCategory);
+        res.status(204).json(moviesByCategory);
     } 
     catch (error) {
         res.status(400).json({ errors: ['Internal server error: ' + error.message] });
@@ -89,7 +67,7 @@ const getMovieById = async (req, res) => {
         const movie = await movieService.getMovieById(req.params.id);
         if (movie == null) {
             // if the movie not exist return not found
-            return res.status(404).json({ errors: ['User not found'] });
+            return res.status(404).json({ errors: ['Movie not found'] });
         }
         // if the movie exists return the movie
         return res.status(200).json(movie);
@@ -100,7 +78,7 @@ const getMovieById = async (req, res) => {
 }
 
 /**
- * Deletes a movie using the function from movieService POGGERS
+ * DELETE
  * @param {Movie's ID} req 
  * @param {movie/error} res 
  */
@@ -111,11 +89,11 @@ const deleteMovie = async (req, res) => {
 
         if (movie == null) {
             // if the movie null so the movie is not exist
-            return res.status(404).json({ errors: ['Movie does not exist'] });
+            return res.status(404).json({ errors: ['Movie not found'] });
         }
 
         // if the movie exists return the movie
-        return res.status(200).json(movie);
+        return res.status(204).json(movie);
     }
     catch (error) {
         // if there was error return error message
@@ -123,5 +101,29 @@ const deleteMovie = async (req, res) => {
     }
 }
 
+/**
+ * PUT
+ * if ID does not exist, creates a new movie instead of editing it
+ * @param {ID, all standard movie parameters} req 
+ * @param {status} res 
+ * @returns movie, or an error, depending on input
+ */
+const putMovie = async(req, res) => {
+    try {
+        const movie = await movieService.putMovie(req.params.id, req.body)
 
-module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories, getMovieById, deleteMovie};
+        if (movie === null) {
+            // if the movie null so the movie is not exist
+            return res.status(400).json({ errors: ['Invalid input'] });
+        }
+
+        return res.status(200).json(movie);
+    }
+
+    catch (error) {
+        return res.status(400).json({ errors: ['Bad requests ' + error.message] });
+    }
+}
+
+
+module.exports = {createMovie, getMoviesByCategories, getMovieById, deleteMovie, putMovie};

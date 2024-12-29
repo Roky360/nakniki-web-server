@@ -8,5 +8,6 @@ router.route('/').get(movieController.getMoviesByCategories);
  
 router.route('/:id').get(movieController.getMovieById);
 router.route('/:id').delete(movieController.deleteMovie);
+router.route('/:id').put(movieController.putMovie);
 
 module.exports = router;
