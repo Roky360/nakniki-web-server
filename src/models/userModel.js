@@ -3,36 +3,39 @@ const Schema = mongoose.Schema;
 
 // define the user schema
 const UserModel = new Schema({
-    username : {
+    username: {
         type: String,
         required: true,
         unique: true
     },
-    password : {
+    password: {
         type: String,
         required: true
     },
-    email : {
+    email: {
         type: String,
         required: true,
         // validate email format
         match: [/\S+@\S+\.\S+/, 'Please use a valid email address.']
     },
-    profile_pic : {
+    profile_pic: {
         type: String,
         required: true
     },
-    recom_id : {
-      type : Number
+    recom_id: {
+        type: Number
     },
-    first_watch : {
-        type : Boolean,
-        default : true
+    first_watch: {
+        type: Boolean,
+        default: true
     },
-    movies : {
-        type : [Number],
-        default : []
-    }
+    movies: [
+        {
+            type: mongoose.Schema.Types.ObjectId, // Reference Movie model
+            ref: 'movies', // Name of the Movie model
+            default: []
+        }
+    ]
 });
 
 module.exports = mongoose.model('users', UserModel, 'users');

@@ -1,4 +1,6 @@
 const recommendationService = require('../services/recommend/recommendationService');
+const userService = require('../services/userService');
+const movieService = require('../services/movieService');
 
 /**
  * GET /movies/:id/recommend
@@ -10,15 +12,22 @@ const recommendationService = require('../services/recommend/recommendationServi
 exports.recommendMovies = async (req, res) => {
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
+    // argument checks
     if (!userId || !movieId) {
         return res.status(400).json({errors: "User and movie IDs required"});
     }
+    if (await userService.getUserById(userId) === null) {
+        return res.status(400).send('User not found');
+    }
+    if (await movieService.getMovieById(userId) === null) {
+        return res.status(400).send('Movie not found');
+    }
 
     const serverRes = await recommendationService.recommend(userId, movieId);
-    if (serverRes.code === 200) {
-        res.status(200).json(serverRes.payload);
+    if (serverRes.status === 200) {
+        res.status(200).json(serverRes.movies);
     } else {
-        res.status(serverRes.code).json({errors: serverRes.payload});
+        res.status(serverRes.status).json({errors: serverRes.movies});
     }
 }
 
@@ -32,14 +41,21 @@ exports.recommendMovies = async (req, res) => {
 exports.addWatchedMovie = async (req, res) => {
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
+    // argument checks
     if (!userId || !movieId) {
         return res.status(400).json({errors: "User and movie IDs required"});
     }
+    if (await userService.getUserById(userId) === null) {
+        return res.status(400).send('User not found');
+    }
+    if (await movieService.getMovieById(userId) === null) {
+        return res.status(400).send('Movie not found');
+    }
 
     try {
-        await recommendationService.markAsWatched(userId, movieId);
-        res.status(201);
+        const result = await recommendationService.markAsWatched(userId, movieId);
+        res.status(201).json(result);
     } catch (err) {
-        res.status(400).json({errors: err});
+        res.status(400).json({errors: [err.message]});
     }
 }

@@ -1,4 +1,8 @@
-const sock = new WebSocket(`ws://${process.env.RECOM_URL}`);
+// const WebSocket = require('ws');
+// let sock = new WebSocket.WebSocket(`ws://${process.env.RECOM_URL}`);
+const {Socket} = require('net');
+let sock = null;
+let connected = false;
 
 /**
  * Sends a request to the recommendation server and returns its response
@@ -6,15 +10,40 @@ const sock = new WebSocket(`ws://${process.env.RECOM_URL}`);
  * @param request String to send
  */
 exports.sendRequest = async (request) => {
-    return new Promise((resolve, reject) => {
-        if (sock.CLOSED) {
-            reject("Connection is closed");
+    return new Promise(async (resolve, reject) => {
+        if (!connected) {
+            await connectToRecomServer()
+                .catch((err) => reject("Can't connect to server: " + err.message));
         }
 
-        sock.send(request);
-        sock.onmessage = (event) => {
-            resolve(parseResponse(event.data));
-        };
+        sock.once('data', (event) => {
+            resolve(parseResponse(event.toString()));
+        });
+        sock.once('error', (err) => {
+            console.error('Socket error:', err);
+        });
+
+        sock.write(request + '\n', () => console.log("sent " + request));
+
+        setTimeout(() => reject("Request to recommendation server timed out."),
+            3000);
+    });
+}
+
+const connectToRecomServer = async () => {
+    return new Promise(async (resolve, reject) => {
+        const addr = process.env.RECOM_URL;
+        const [host, port] = addr.split(':');
+
+        sock = new Socket();
+        sock.connect(port, host, () => {
+            connected = true;
+            resolve();
+        });
+
+        sock.on('error', (err) => {
+            reject(err);
+        })
     });
 }
 
