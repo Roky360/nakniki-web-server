@@ -7,10 +7,10 @@ const createCategory = async (req, res) => {
             req.body.promoted
         );
         // return status 201 created
-        res.status(201).json(category);
+        return res.status(201).json(category);
     } catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({ errors: [error.message] });
     }
 };
 
@@ -19,13 +19,13 @@ const getAllCategories = async (req, res) => {
         // try to get the categories using category services
         const categories = await categoryService.getAllCategories();
         // return the categories with status 200
-        res.status(200).json(categories);
+        return res.status(200).json(categories);
     }
     catch (error) {
         // if there was error return the error
-        res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({ errors: [error.message] });
     }
-}
+};
 
 const getCategoryById = async (req, res) => {
     try {
@@ -36,12 +36,12 @@ const getCategoryById = async (req, res) => {
             return res.status(404).json({ errors: ['Category not found'] });
         }
         // if the category exists return the category
-        res.status(200).json(category);
+        return res.status(200).json(category);
     } catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
-}
+};
 
 const updateCategory = async (req, res) => {
     try {
@@ -57,11 +57,11 @@ const updateCategory = async (req, res) => {
             return res.status(404).json({ errors: ['Category does not exist'] });
         }
         // if the category exists return the category
-        res.status(200).json(category);
+        return res.status(200).json(category);
     }
     catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
 };
 

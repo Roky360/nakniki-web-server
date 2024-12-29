@@ -10,10 +10,10 @@ const createUser = async (req, res) => {
             req.body.profile_pic
         );
         // return status 201 created
-        res.status(201).json(user);
+        return res.status(201).json(user);
     } catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({ errors: [error.message] });
     }
 };
 
@@ -26,10 +26,10 @@ const getUserById = async (req, res) => {
             return res.status(404).json({ errors: ['User not found'] });
         }
         // if the user exists return the user
-        res.status(200).json(user);
+        return res.status(200).json(user);
     } catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
 };
 
