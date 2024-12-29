@@ -92,10 +92,10 @@ const getMovieById = async (req, res) => {
             return res.status(404).json({ errors: ['User not found'] });
         }
         // if the movie exists return the movie
-        res.status(200).json(movie);
+        return res.status(200).json(movie);
     } catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
 }
 
@@ -111,15 +111,15 @@ const deleteMovie = async (req, res) => {
 
         if (movie == null) {
             // if the movie null so the movie is not exist
-            res.status(404).json({ errors: ['Movie does not exist'] });
+            return res.status(404).json({ errors: ['Movie does not exist'] });
         }
 
         // if the movie exists return the movie
-        res.status(200).json(movie);
+        return res.status(200).json(movie);
     }
     catch (error) {
         // if there was error return error message
-        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
     }
 }
 
