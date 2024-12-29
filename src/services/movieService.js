@@ -2,6 +2,7 @@ const Movie = require('../models/movieModel');
 const Category = require('../models/categoryModel');
 const categoryService = require('../services/categoryService');
 const recommendationService = require('../services/recommend/recommendationService');
+const User = require('../models/userModel');
 
 /**
  * 
@@ -78,7 +79,6 @@ const get20MoviesByCategory = async (catID) => {
 };
 
 /**
- * 
  * @param {The movie's ID, string} id 
  * @returns movie, null, or error, depending on the input and whether the function suceeded
  */
@@ -118,6 +118,10 @@ const deleteMovie = async (id) => {
             return null;
         }
 
+        await User.updateMany(
+            { movies: id },
+            { $pull: { movies: id } }
+        );
         // delete the movie
         await movie.deleteOne();
         return movie;
