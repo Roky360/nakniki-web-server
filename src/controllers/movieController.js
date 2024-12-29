@@ -77,4 +77,51 @@ const getMoviesByCategories = async (req, res) => {
     }
 };
 
-module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories};
+/**
+ * Returns a movie using the function from movieService
+ * @param {Movie's ID} req 
+ * @param {error/movie} res 
+ * @returns 
+ */
+const getMovieById = async (req, res) => {
+    try {
+        // get the movie by his ID from the service
+        const movie = await movieService.getMovieById(req.params.id);
+        if (movie == null) {
+            // if the movie not exist return not found
+            return res.status(404).json({ errors: ['User not found'] });
+        }
+        // if the movie exists return the movie
+        res.status(200).json(movie);
+    } catch (error) {
+        // if there was error return error message
+        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+    }
+}
+
+/**
+ * Deletes a movie using the function from movieService POGGERS
+ * @param {Movie's ID} req 
+ * @param {movie/error} res 
+ */
+const deleteMovie = async (req, res) => {
+    try {
+        // try to delete the movie
+        const movie = await movieService.deleteMovie(req.params.id);
+
+        if (movie == null) {
+            // if the movie null so the movie is not exist
+            res.status(404).json({ errors: ['Movie does not exist'] });
+        }
+
+        // if the movie exists return the movie
+        res.status(200).json(movie);
+    }
+    catch (error) {
+        // if there was error return error message
+        res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+    }
+}
+
+
+module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories, getMovieById, deleteMovie};

@@ -107,4 +107,55 @@ const addCategoryToMovie = async (movieID, catID) => {
     }
 };
 
-module.exports = {createMovie, get20MoviesByCategory, addCategoryToMovie};
+/**
+ * 
+ * @param {The movie's ID, string} id 
+ * @returns movie, null, or error, depending on the input and whether the function suceeded
+ */
+const getMovieById = async (id) => {
+    try {
+        // try to get the movie by the id
+        const movie = await Movie.findById(id);
+        if (!movie) {
+            // if the movie is not exist return null
+            return null;
+        }
+        // return the movie
+        return movie;
+    } catch (error) {
+        // if the error because the movie is not exist
+        if (error.name === 'CastError' && error.kind === 'ObjectId') {
+            // return null
+            return null;
+        }
+        // if there was error throw it
+        throw new Error('Error fetching user by ID: ' + error.message);
+    }
+}
+
+/**
+ * Deletes a movie
+ * @param {Movie's ID, string} id 
+ * @returns movie, null or error
+ */
+const deleteMovie = async (id) => {
+    try {
+        // try to get the movie
+        const movie = await getMovieById(id);
+
+        // if the movie is not exist return null
+        if (movie == null) {
+            return null;
+        }
+
+        // delete the movie
+        await movie.deleteOne();
+        return movie;
+    }
+    catch (error) {
+        // if there was an error throw it
+        throw new Error('Error deleting category: ' + error.message);
+    }
+}
+
+module.exports = {createMovie, get20MoviesByCategory, addCategoryToMovie, getMovieById, deleteMovie};
