@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const categoryModel = require('./categoryModel');
 const Schema = mongoose.Schema;
 
 // Assistant function, to ensure that the entered date is valid
@@ -16,12 +15,12 @@ const isValidDate = (value) => {
 
 // define the movie
 const MovieModel = new Schema({
-    name : {
+    name: {
         type: String,
         required: true,
         unique: true
     },
-    published : {
+    published: {
         type: String,
         required: true,
         // Ensures that the entered date is valid using the helper function 
@@ -30,7 +29,7 @@ const MovieModel = new Schema({
             message: 'Please use a valid date format: DD/MM/YYYY'
         }
     },
-    actors : {
+    actors: {
         type: [String],
         required: true,
         validate: {
@@ -54,12 +53,12 @@ const MovieModel = new Schema({
     },
     categories: [
         {
-        type: mongoose.Schema.Types.ObjectId, // Reference Category model
-        ref: 'categoryModel', // Name of the Category model
+            type: mongoose.Schema.Types.ObjectId, // Reference Category model
+            ref: 'categories', // Name of the Category model
         }
     ],
-    recom_id : {
-        type : Number
+    recom_id: {
+        type: Number
     }
 });
 

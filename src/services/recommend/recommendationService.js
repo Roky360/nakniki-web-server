@@ -27,34 +27,30 @@ exports.generateRecomId = async () => {
  */
 exports.markAsWatched = async (userId, movieId) => {
     // get user and movies docs and check they exist
-    const userDoc = User.findById(userId);
-    if (userDoc === null) {
-        throw new Error('User does not exist');
-    }
-    const movieDoc = Movie.findById(movieId);
-    if (movieDoc === null) {
-        throw new Error('Movie does not exist');
-    }
-    // if the movie is already in the user's watched list - return 400 bad request
-    if (userDoc.get('movies').contains(movieId)) {
-        throw new Error('Movie already watched by this user');
-    }
-
+    const userDoc = await User.findById(userId);
+    const movieDoc = await Movie.findById(movieId);
+    // get recommendation IDs
     const userRecomId = userDoc.get('recom_id');
     const movieRecomId = movieDoc.get('recom_id');
+
     try {
         // decide whether to send POST or PATCH request
         if (userDoc.get('first_watch') === true) {
             // it's the user's first watch - POST
-            userDoc.updateOne({'first_watch': false});
             await sendRequest(`POST ${userRecomId} ${movieRecomId}`);
+            // set first_watch to false
+            userDoc.first_watch = false;
+            await userDoc.save();
         } else {
             // PATCH
             await sendRequest(`PATCH ${userRecomId} ${movieRecomId}`);
         }
         // add the movie id to the watched array of the user
-        await userDoc.updateOne({$push: {'movies': movieId}});
+        await userDoc.updateOne({$addToSet: {'movies': movieId}});
+
+        return {movie_id: movieId};
     } catch (err) {
+        throw err;
     }
 }
 
@@ -67,15 +63,9 @@ exports.markAsWatched = async (userId, movieId) => {
  */
 exports.markAsUnwatched = async (userId, movieId) => {
     // get user and movies docs and check they exist
-    const userDoc = User.findById(userId);
-    if (userDoc === null) {
-        throw new Error('User does not exist');
-    }
-    const movieDoc = Movie.findById(movieId);
-    if (movieDoc === null) {
-        throw new Error('Movie does not exist');
-    }
-
+    const userDoc = await User.findById(userId);
+    const movieDoc = await Movie.findById(movieId);
+    // get recommendation IDs
     const userRecomId = userDoc.get('recom_id');
     const movieRecomId = movieDoc.get('recom_id');
     try {
@@ -90,13 +80,38 @@ exports.markAsUnwatched = async (userId, movieId) => {
  * an array of the recommended movies.
  * @param userId
  * @param movieId
- * @returns {Promise<{code, payload}>}
+ * @returns {Promise<{status, movies}>}
  */
 exports.recommend = async (userId, movieId) => {
-    const res = await sendRequest(`GET ${userId} ${movieId}`);
+    // get user and movies docs and check they exist
+    const userDoc = await User.findById(userId);
+    const movieDoc = await Movie.findById(movieId);
+    // get recommendation IDs
+    const userRecomId = userDoc.get('recom_id');
+    const movieRecomId = movieDoc.get('recom_id');
 
-    if (res.status === 200) {
-        res.payload = res.payload.split(' '); // convert the recommended movie list to an array
+    try {
+        const res = await sendRequest(`GET ${userRecomId} ${movieRecomId}`);
+        // convert the recommended movies to an array of numbers
+        const movieRecomIds = res.payload.split(' ')
+            .slice(0, -1)
+            .map(e => Number(e));
+
+        return {
+            status: res.status,
+            movies: await getMoviesByRecomId(movieRecomIds)
+        };
+    } catch (err) {
+        return {
+            status: 400,
+            movies: err
+        };
     }
-    return res;
+}
+
+const getMoviesByRecomId = async (recomIds) => {
+    if (!recomIds) {
+        return [];
+    }
+    return Movie.find({recom_id: {$in: recomIds}});
 }
