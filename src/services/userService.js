@@ -51,7 +51,20 @@ const isUserExist = async (username, password) => {
 };
 
 const getUserByUsernameAndPassword = async (username, password) => {
-    return await User.findOne({ username, password });
+    try {
+        // try to find the user
+        const user = await User.findOne({ username, password });
+
+        if (!user) {
+            // if the user now found return null
+            return null;
+        }
+        // return the user
+        return user;
+    }
+    catch (error) {
+        throw new Error('Error fetching user by username and password: ' + error.message);
+    }
 };
 
 module.exports = {createUser, getUserById, isUserExist, getUserByUsernameAndPassword};

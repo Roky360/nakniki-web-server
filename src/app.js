@@ -2,12 +2,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 const {env} = require("custom-env");
+env(process.env.NODE_ENV, "./config");
 
 const appRouter = require('./routes/appRouter');
 
 // check app variables
-env(process.env.NODE_ENV, "./config");
 if (process.env.MONGODB_URI === undefined) {
     console.error("MongoDB URI is missing");
     process.exit(1);
@@ -29,7 +30,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json());
 
 // set app endpoints
-// app.use(...)
 app.use('/api', appRouter);
 
 console.log(`Running on http://localhost:${process.env.PORT}`);
