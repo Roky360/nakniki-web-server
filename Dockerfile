@@ -6,10 +6,10 @@ WORKDIR /app
 
 # copy project files
 COPY package*.json .
-COPY src/ .
-COPY config/ .
+COPY ./src ./src
+COPY ./config ./config
 
 # install dependencies
-RUN npm install --omit=dev
+RUN npm install
 
 CMD ["npm", "start"]
