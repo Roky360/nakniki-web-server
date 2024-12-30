@@ -5,7 +5,7 @@ const recommendationService = require('../services/recommend/recommendationServi
 const User = require('../models/userModel');
 
 /**
- *
+ **
  * @param {The category's name, string} name
  * @param {The category's release date, DATE - dd/mm/yyyy format} published
  * @param {The performing actors, string} actors
