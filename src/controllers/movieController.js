@@ -37,18 +37,25 @@ const createMovie = async (req, res) => {
  */
 const getMoviesByCategories = async (req, res) => {
     try {
+        const userID = req.headers['user-id'];
         // Get all promoted
         const categories = await categoryService.getAllCategories();
         const promotedCategories = categories.filter(category => category.promoted);
 
         // Get up to 20 movies of each categ, using the function from movieService
         const moviesByCategoryPromises = promotedCategories.map(async (category) => {
-            const movies = await movieService.get20MoviesByCategory(category._id);
+            const movies = await movieService.get20MoviesByCategory(category._id, userID);
             return { category: category.name, movies };
         });
+
+        if (userID) {
+            const watchedCategory = await movieService.getWatchedMovies(userID);
+            moviesByCategoryPromises.push(Promise.resolve(watchedCategory));
+        }
+
         // Wait for all the searches to finish
         const moviesByCategory = await Promise.all(moviesByCategoryPromises);
-        res.status(204).json(moviesByCategory);
+        res.status(200).json(moviesByCategory);
     } 
     catch (error) {
         res.status(400).json({ errors: ['Internal server error: ' + error.message] });

@@ -57,17 +57,30 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
  * @returns up to 20 random movies from that category
  */
 
-const get20MoviesByCategory = async (catID) => {
+const get20MoviesByCategory = async (catID, userID) => {
     try {
         // If the category does not exist, or is not promoted, do not show it
         const category = await Category.findById(catID);
         if (!category || !category.promoted) {
             return [];
         }
+        
+        // Fetch user's watched movies if a userID is provided
+        let watchedMovies = [];
+        if (userID) {
+            const user = await User.findById(userID);
+            if (user?.movies?.length) {
+                watchedMovies = user.movies.map(movieId => mongoose.Types.ObjectId(movieId));
+            }
+        }
 
         // Get 20 random movies of that category
         const movies = await Movie.aggregate([
-            { $match: { categories: catID } },
+            { 
+            $match: { 
+                categories: catID,
+                _id: { $nin: watchedMovies } // Exclude watched movies 
+            } },
             { $sample: { size: 20 } }
         ]);
 
@@ -141,7 +154,7 @@ const deleteMovie = async (id) => {
 const putMovie = async (id, movieData) => {
     try { 
 
-        const categoryDocs = await Promise.all(newMovieData.categories.map(id => Category.findById(id)));
+        const categoryDocs = await Promise.all(movieData.categories.map(id => Category.findById(id)));
         if (categoryDocs.includes(null)) {
             return null;
         }
@@ -159,5 +172,34 @@ const putMovie = async (id, movieData) => {
     }
 };
 
+/**
+ * Returns up to 20 of the user's previously watched movies
+ * @param {ID, user's id} userId 
+ * @returns error or up to 20 movies
+ */
+const getWatchedMovies = async (userId) => {
+    try {
+        // Find the user by ID
+        const user = await User.findById(userId);
+        if (!user || !user.movies || user.movies.length === 0) {
+            return { category: 'Watched', movies: [] }; // Return empty category if no watched movies
+        }
 
-module.exports = {createMovie, get20MoviesByCategory, getMovieById, deleteMovie, putMovie};
+        // Fetch up to 20 random watched movies
+        const watchedMovies = await Movie.aggregate([
+            {
+                $match: {
+                    _id: { $in: user.movies.map(movieId => mongoose.Types.ObjectId(movieId)) }
+                }
+            },
+            { $sample: { size: 20 } } // Randomly select up to 20 movies
+        ]);
+
+        return { category: 'Watched', movies: watchedMovies };
+    } catch (error) {
+        throw new Error('Error fetching watched movies category: ' + error.message);
+    }
+};
+
+
+module.exports = {createMovie, get20MoviesByCategory, getMovieById, deleteMovie, putMovie, getWatchedMovies};
