@@ -1,35 +1,38 @@
-// const WebSocket = require('ws');
-// let sock = new WebSocket.WebSocket(`ws://${process.env.RECOM_URL}`);
 const {Socket} = require('net');
+
 let sock = null;
 let connected = false;
 
 /**
- * Sends a request to the recommendation server and returns its response
- * in the form of an object: {code, payload}.
+ * Sends a request to the recommendation server and returns its response in the form of an object: {status, payload}.
  * @param request String to send
+ * @returns {Promise<{status, payload}>} Server's response.
  */
 exports.sendRequest = async (request) => {
     return new Promise(async (resolve, reject) => {
+        // if not connected to recommendation server - try to connect (lazy connection)
         if (!connected) {
             await connectToRecomServer()
-                .catch((err) => reject("Can't connect to server: " + err.message));
+                .catch((err) => reject("Can't connect to recommendation server: " + err.message));
         }
 
+        // when response arrives, parse it and return
         sock.once('data', (event) => {
             resolve(parseResponse(event.toString()));
         });
-        sock.once('error', (err) => {
-            console.error('Socket error:', err);
-        });
+        // send the request
+        sock.write(request + '\n');
 
-        sock.write(request + '\n', () => console.log("sent " + request));
-
+        // set timeout for server response (shouldn't get here if connection is ok)
         setTimeout(() => reject("Request to recommendation server timed out."),
-            3000);
+            5000);
     });
 }
 
+/**
+ * Attempts to initiate a connection with the recommendation server.
+ * Sets the `connected` flag to true if connected successfully.
+ */
 const connectToRecomServer = async () => {
     return new Promise(async (resolve, reject) => {
         const addr = process.env.RECOM_URL;
@@ -42,7 +45,12 @@ const connectToRecomServer = async () => {
         });
 
         sock.on('error', (err) => {
+            connected = false;
             reject(err);
+        });
+        sock.on('close', () => {
+            connected = false;
+            reject('Connection closed');
         })
     });
 }

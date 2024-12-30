@@ -17,10 +17,10 @@ exports.recommendMovies = async (req, res) => {
         return res.status(400).json({errors: "User and movie IDs required"});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).send('User not found');
+        return res.status(400).json({errors: 'User not found'});
     }
     if (await movieService.getMovieById(userId) === null) {
-        return res.status(400).send('Movie not found');
+        return res.status(400).json({errors: 'Movie not found'});
     }
 
     const serverRes = await recommendationService.recommend(userId, movieId);
@@ -46,10 +46,10 @@ exports.addWatchedMovie = async (req, res) => {
         return res.status(400).json({errors: "User and movie IDs required"});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).send('User not found');
+        return res.status(400).json({errors: 'User not found'});
     }
     if (await movieService.getMovieById(userId) === null) {
-        return res.status(400).send('Movie not found');
+        return res.status(400).json({errors: 'Movie not found'});
     }
 
     try {

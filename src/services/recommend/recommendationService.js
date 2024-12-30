@@ -22,7 +22,7 @@ exports.generateRecomId = async () => {
  * Marks a movie as watched by a user in the recommendation system; also updates the user's watched array.
  * @param userId Recommendation user id.
  * @param movieId Recommendation movie id.
- * @returns void
+ * @returns Movie document - if operation was successful.
  * @throws Error if user/movie does not exist.
  */
 exports.markAsWatched = async (userId, movieId) => {
@@ -48,18 +48,17 @@ exports.markAsWatched = async (userId, movieId) => {
         // add the movie id to the watched array of the user
         await userDoc.updateOne({$addToSet: {'movies': movieId}});
 
-        return {movie_id: movieId};
+        return movieDoc;
     } catch (err) {
         throw err;
     }
 }
 
 /**
- * Marks a movie as unwatched by a user. Sends a request to the recommendation server and updates the user's watched
- * array.
+ * Marks a movie as unwatched by a user. Sends a request to the recommendation server and updates the user's watched array.
  * @param userId
  * @param movieId
- * @returns {Promise<void>}
+ * @returns Movie document if operation was successful, or null if something went wrong.
  */
 exports.markAsUnwatched = async (userId, movieId) => {
     // get user and movies docs and check they exist
@@ -71,7 +70,9 @@ exports.markAsUnwatched = async (userId, movieId) => {
     try {
         await sendRequest(`DELETE ${userRecomId} ${movieRecomId}`);
         await userDoc.updateOne({$pull: {'movies': movieId}});
+        return movieDoc;
     } catch (err) {
+        return null;
     }
 }
 
@@ -109,6 +110,11 @@ exports.recommend = async (userId, movieId) => {
     }
 }
 
+/**
+ * Returns movie docs from given recommendation IDs array.
+ * @param recomIds Recommendation IDs of the movies.
+ * @returns Movies documents that corresponds to those IDs.
+ */
 const getMoviesByRecomId = async (recomIds) => {
     if (!recomIds) {
         return [];
