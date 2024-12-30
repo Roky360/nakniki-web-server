@@ -157,22 +157,67 @@ const deleteMovie = async (id) => {
  * @returns movie, null or error, depending on the result
  */
 const putMovie = async (id, movieData) => {
-    try { 
+    try {
+        // Check if the movie exists
+        const existingMovie = await Movie.findById(id);
 
-        const categoryDocs = await Promise.all(movieData.categories.map(id => Category.findById(id)));
-        if (categoryDocs.includes(null)) {
+        // Validate the category IDs
+        const categoryDocs = await Promise.all(
+            movieData.categories.map(async (id) => await categoryService.getCategoryById(id))
+        );
+
+        // Returns an error if at least one category is incorrect, bad users deserve punishment >:D
+        const invalidCategories = categoryDocs.filter(category => category === null);
+        if (invalidCategories.length > 0) {
             return null;
         }
 
+        const validCategories = categoryDocs.filter(category => category !== null);
+        if (validCategories.length === 0) {
+            return null;
+        }
+        
+        const validCategoryIds = validCategories.map(category => category._id);
+        const validActorList = movieData.actors.split(',').map(actor => actor.trim());
+
+        let recom_id;
+
+        if (existingMovie) {
+            recom_id = existingMovie.recom_id;
+        }
+
+        else {
+            recom_id = await recommendationService.generateRecomId();
+        }
+
+         // Build the updated movie object
+         const updatedMovieData = {
+            name: movieData.name,
+            published: movieData.published,
+            actors: validActorList,
+            thumbnail: movieData.thumbnail,
+            description: movieData.description,
+            length: movieData.length,
+            categories: validCategoryIds,
+            recom_id,
+        };
+
+        // Create a new movie instance for validation
+        const movieToValidate = new Movie(updatedMovieData);
+
+        // Validate the data explicitly
+        await movieToValidate.validate();
+
         const newMovie = await Movie.findOneAndReplace(
             { _id: id }, 
-            movieData,          
+           updatedMovieData,
                 { new: true, upsert: true }
         );
 
+
         return newMovie; 
-    }
-    catch (error) {
+
+    } catch (error) {
         throw new Error('Error putting movie: ' + error.message);
     }
 };
