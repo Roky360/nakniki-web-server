@@ -30,28 +30,6 @@ const createMovie = async (req, res) => {
 };
 
 /**
- * Adds category to movie using movieService
- * @param {movieID, categoryID} req 
- * @param {status} res 
- * @returns 
- */
-const addCategoryToMovie = async (req, res) => {
-    const {movieID, catID} = req.body
-
-    try {
-        const result = await movieService.addCategoryToMovie(movieID, catID);
-        if (result == null) {
-            return res.status(404).json({ errors: ['Invalid request'] });
-        }
-        return res.status(200).json({});
-    }
-
-    catch (error) {
-        return res.status(400).json({ errors: ['Internal server error: ' + error.message] })
-    }
-}
-
-/**
  * GET
  * Showcase up to 20 random movies from each category which is promoted
  * @param {} req 
@@ -59,15 +37,22 @@ const addCategoryToMovie = async (req, res) => {
  */
 const getMoviesByCategories = async (req, res) => {
     try {
+        const userID = req.headers['user-id'];
         // Get all promoted
         const categories = await categoryService.getAllCategories();
         const promotedCategories = categories.filter(category => category.promoted);
 
         // Get up to 20 movies of each categ, using the function from movieService
         const moviesByCategoryPromises = promotedCategories.map(async (category) => {
-            const movies = await movieService.get20MoviesByCategory(category._id);
+            const movies = await movieService.get20MoviesByCategory(category._id, userID);
             return { category: category.name, movies };
         });
+
+        if (userID) {
+            const watchedCategory = await movieService.getWatchedMovies(userID);
+            moviesByCategoryPromises.push(Promise.resolve(watchedCategory));
+        }
+
         // Wait for all the searches to finish
         const moviesByCategory = await Promise.all(moviesByCategoryPromises);
         res.status(200).json(moviesByCategory);
@@ -78,8 +63,78 @@ const getMoviesByCategories = async (req, res) => {
 };
 
 /**
+ * Returns a movie using the function from movieService
+ * @param {Movie's ID} req 
+ * @param {error/movie} res 
+ * @returns 
+ */
+const getMovieById = async (req, res) => {
+    try {
+        // get the movie by his ID from the service
+        const movie = await movieService.getMovieById(req.params.id);
+        if (movie == null) {
+            // if the movie not exist return not found
+            return res.status(404).json({ errors: ['Movie not found'] });
+        }
+        // if the movie exists return the movie
+        return res.status(200).json(movie);
+    } catch (error) {
+        // if there was error return error message
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+    }
+}
+
+/**
+ * DELETE
+ * @param {Movie's ID} req 
+ * @param {movie/error} res 
+ */
+const deleteMovie = async (req, res) => {
+    try {
+        // try to delete the movie
+        const movie = await movieService.deleteMovie(req.params.id);
+
+        if (movie == null) {
+            // if the movie null so the movie is not exist
+            return res.status(404).json({ errors: ['Movie not found'] });
+        }
+
+        // if the movie exists return the movie
+        return res.status(204).json(movie);
+    }
+    catch (error) {
+        // if there was error return error message
+        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+    }
+}
+
+/**
+ * PUT
+ * if ID does not exist, creates a new movie instead of editing it
+ * @param {ID, all standard movie parameters} req 
+ * @param {status} res 
+ * @returns movie, or an error, depending on input
+ */
+const putMovie = async(req, res) => {
+    try {
+        const movie = await movieService.putMovie(req.params.id, req.body)
+
+        if (movie === null) {
+            // if the movie null so the movie is not exist
+            return res.status(400).json({ errors: ['Invalid input'] });
+        }
+
+        return res.status(200).json(movie);
+    }
+
+    catch (error) {
+        return res.status(400).json({ errors: ['Bad requests ' + error.message] });
+    }
+}
+
+
+/**
  * GET movies/:query
- *
  * Returns a list of all movies that matches the given query.
  */
 const searchMovies = async (req, res) => {
@@ -92,4 +147,4 @@ const searchMovies = async (req, res) => {
     }
 }
 
-module.exports = {createMovie, addCategoryToMovie, getMoviesByCategories, searchMovies};
+module.exports = {createMovie, getMoviesByCategories, getMovieById, deleteMovie, putMovie, searchMovies};
