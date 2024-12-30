@@ -4,6 +4,10 @@ const router = express.Router();
 const movieController = require('../controllers/movieController');
 const recommendController = require('../controllers/recommendController');
 
+router.route('/:id').get(movieController.getMovieById);
+router.route('/:id').delete(movieController.deleteMovie);
+router.route('/:id').put(movieController.putMovie);
+
 router.route('/')
     .post(movieController.createMovie)
     .get(movieController.getMoviesByCategories);
