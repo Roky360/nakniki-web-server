@@ -15,7 +15,7 @@ const User = require('../models/userModel');
  * @param {The categories' IDs that the movie belongs to, ex: horror or action, Category[]} categories
  * @returns
  */
-const createMovie = async (name, published, actors, thumbnail, description, length, categories, id = null) => {
+const createMovie = async (name, published, actors, thumbnail, description, length, categories) => {
     try {
         // Validate the category IDs
         const categoryDocs = await Promise.all(
@@ -36,7 +36,6 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
         const validCategoryIds = validCategories.map(category => category._id);
         // Create the movie with the valid category IDs
         const movie = new Movie({
-            _id: id || undefined,
             name,
             published,
             actors: actors.split(',').map(actor => actor.trim()),
@@ -162,44 +161,62 @@ const putMovie = async (id, movieData) => {
         // Check if the movie exists
         const existingMovie = await Movie.findById(id);
 
-        // Use the createMovie function to create a new movie with the provided data, first of all checking
-        // Whether it is valid
-        const testMovie = await createMovie(
-            movieData.name,
-            movieData.published,
-            movieData.actors,
-            movieData.thumbnail,
-            movieData.description,
-            movieData.length,
-            movieData.categories
+        // Validate the category IDs
+        const categoryDocs = await Promise.all(
+            movieData.categories.map(async (id) => await categoryService.getCategoryById(id))
         );
 
-        if (!testMovie) {
-            return null; // Return null if creation failed
+        // Returns an error if at least one category is incorrect, bad users deserve punishment >:D
+        const invalidCategories = categoryDocs.filter(category => category === null);
+        if (invalidCategories.length > 0) {
+            return null;
         }
 
-        // If the movie exists, delete it (to replace it)
-        if (existingMovie) {
-            await existingMovie.deleteOne();
-        } 
-        // If the test succeeded, we will make a new movie, but this time using the real ID
-        await testMovie.deleteOne();
+        const validCategories = categoryDocs.filter(category => category !== null);
+        if (validCategories.length === 0) {
+            return null;
+        }
+        
+        const validCategoryIds = validCategories.map(category => category._id);
+        const validActorList = movieData.actors.split(',').map(actor => actor.trim());
 
-        const newMovie = await createMovie(
-            movieData.name,
-            movieData.published,
-            movieData.actors,
-            movieData.thumbnail,
-            movieData.description,
-            movieData.length,
-            movieData.categories,
-            id
+        let recom_id;
+
+        if (existingMovie) {
+            recom_id = existingMovie.recom_id;
+        }
+
+        else {
+            recom_id = await recommendationService.generateRecomId();
+        }
+
+         // Build the updated movie object
+         const updatedMovieData = {
+            name: movieData.name,
+            published: movieData.published,
+            actors: validActorList,
+            thumbnail: movieData.thumbnail,
+            description: movieData.description,
+            length: movieData.length,
+            categories: validCategoryIds,
+            recom_id,
+        };
+
+        // Create a new movie instance for validation
+        const movieToValidate = new Movie(updatedMovieData);
+
+        // Validate the data explicitly
+        await movieToValidate.validate();
+
+        const newMovie = await Movie.findOneAndReplace(
+            { _id: id }, 
+           updatedMovieData,
+                { new: true, upsert: true }
         );
 
-        // Save the movie
-        await newMovie.save();
 
-        return newMovie; // Return the newly created or updated movie
+        return newMovie; 
+
     } catch (error) {
         throw new Error('Error putting movie: ' + error.message);
     }
