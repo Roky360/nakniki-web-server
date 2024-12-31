@@ -14,20 +14,20 @@ exports.recommendMovies = async (req, res) => {
     const movieId = req.params.id;
     // argument checks
     if (!userId || !movieId) {
-        return res.status(400).json({errors: "User and movie IDs required"});
+        return res.status(400).json({errors: ["User and movie IDs required"]});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).send('User not found');
+        return res.status(400).json({errors: ['User not found']});
     }
-    if (await movieService.getMovieById(userId) === null) {
-        return res.status(400).send('Movie not found');
+    if (await movieService.getMovieById(movieId) === null) {
+        return res.status(400).json({errors: ['Movie not found']});
     }
 
     const serverRes = await recommendationService.recommend(userId, movieId);
     if (serverRes.status === 200) {
         res.status(200).json(serverRes.movies);
     } else {
-        res.status(serverRes.status).json({errors: serverRes.movies});
+        res.status(serverRes.status).json({errors: [serverRes.movies]});
     }
 }
 
@@ -43,13 +43,13 @@ exports.addWatchedMovie = async (req, res) => {
     const movieId = req.params.id;
     // argument checks
     if (!userId || !movieId) {
-        return res.status(400).json({errors: "User and movie IDs required"});
+        return res.status(400).json({errors: ["User and movie IDs required"]});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).send('User not found');
+        return res.status(400).json({errors: ['User not found']});
     }
-    if (await movieService.getMovieById(userId) === null) {
-        return res.status(400).send('Movie not found');
+    if (await movieService.getMovieById(movieId) === null) {
+        return res.status(400).json({errors: ['Movie not found']});
     }
 
     try {
