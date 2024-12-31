@@ -10,6 +10,11 @@ const movieService = require('../services/movieService');
  * 400 upon failure or invalid arguments.
  */
 exports.recommendMovies = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
     // argument checks
@@ -39,6 +44,11 @@ exports.recommendMovies = async (req, res) => {
  * 400 upon failure with error message in payload.
  */
 exports.addWatchedMovie = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
     // argument checks

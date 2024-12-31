@@ -1,6 +1,12 @@
 const categoryService = require('../services/categoryService');
+const authService = require('../services/authService');
 
 const createCategory = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     try {
         const category = await categoryService.createCategory(
             req.body.name,
@@ -15,6 +21,11 @@ const createCategory = async (req, res) => {
 };
 
 const getAllCategories = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     try {
         // try to get the categories using category services
         const categories = await categoryService.getAllCategories();
@@ -28,6 +39,11 @@ const getAllCategories = async (req, res) => {
 };
 
 const getCategoryById = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     try {
         // get the category by his ID from the service
         const category = await categoryService.getCategoryById(req.params.id);
@@ -44,6 +60,11 @@ const getCategoryById = async (req, res) => {
 };
 
 const updateCategory = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     try {
         // try to update the category
         const category = await categoryService.updateCategory(
@@ -66,6 +87,11 @@ const updateCategory = async (req, res) => {
 };
 
 const deleteCategory = async (req, res) => {
+    // auth user
+    if (!await authService.authenticateUser(req.headers['user_id'])) {
+        return res.status(401).json({errors: authService.AuthFailedMsg});
+    }
+
     try {
         // try to delete the category
         const category = await categoryService.deleteCategory(req.params.id);
