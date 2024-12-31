@@ -42,4 +42,6 @@ This is the web server of the Netflix project.
 
 ## RESTful API guide
 
-...
+We created a [Postman page](https://www.postman.com/nakniki-netflix-enterprises-inc/nakniki-netflix-web-server) with all the required endpoints from the assignment, to make it easy to send requests to the web server.
+Simply fill the required query params, headers or body properties, press "Send" and see the response.
+A curl snippet can be found there as well for your choice.
