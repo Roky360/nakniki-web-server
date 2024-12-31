@@ -75,8 +75,8 @@ const deleteCategory = async (req, res) => {
             return res.status(404).json({ errors: ['Category does not exist'] });
         }
 
-        // if the category exists return the category
-        return res.status(200).json(category);
+        // if the category exists return status 204
+        return res.status(204).json();
     }
     catch (error) {
         // if there was error return error message

@@ -2,8 +2,15 @@ const User = require('../models/userModel');
 const recommendationService = require('../services/recommend/recommendationService');
 
 const createUser = async (username, password, email, profile_pic) => {
-    // try to create new user
+
+    // if the username already exist return false
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+        return { success: false, message: 'Username already exists' };
+    }
+
     try {
+        // try to create new user
         const user = new User({
             username,
             password,
@@ -11,10 +18,13 @@ const createUser = async (username, password, email, profile_pic) => {
             profile_pic,
             recom_id : await recommendationService.generateRecomId()
         });
-        return await user.save();
+
+        // Save the new user to the database
+        const savedUser = await user.save();
+        return { success: true, message: 'User saved successfully', user: savedUser };
     }
-    catch (error) { // if there was problem trow the error
-        throw new Error('Error creating user: ' + error.message);
+    catch (error) { // if there was problem return the error
+        return { error: 'Error creating user: ' + error.message };
     }
 };
 
@@ -40,13 +50,21 @@ const getUserById = async (id) => {
 };
 
 const isUserExist = async (username, password) => {
+    // if didnt get the username or the error
+    if (!username || !password) {
+        return {success: false, message: 'Didnt get username or/and password'};
+    }
     try {
         // try to find the user by name and password and return it
         const user = await User.findOne({ username, password });
-        return user !== null;
+        if (user) {
+            return { success: true };
+        } else {
+            return { success: false, message: 'User not found' };
+        }
     } catch (error) {
-        // if there was an error throw it
-        throw new Error('Error checking user existence: ' + error.message);
+        // if there was an error return false
+        return { success: false, message: error.message };
     }
 };
 
