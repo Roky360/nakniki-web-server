@@ -1,0 +1,10 @@
+services:
+  # runs the web server (with env file passed: --env-file ./config/.env.example)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV}  # pass the env name to docker
+    ports:  # expose the app port
+      - "${PORT}:${PORT}"
