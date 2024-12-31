@@ -19,9 +19,7 @@ if (process.env.PORT === undefined) {
 }
 
 // connect to mongodb
-mongoose.connect(process.env.MONGODB_URI, {
-    useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGODB_URI);
 
 // setup app
 const app = express();

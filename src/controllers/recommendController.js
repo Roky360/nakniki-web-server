@@ -1,6 +1,7 @@
 const recommendationService = require('../services/recommend/recommendationService');
 const userService = require('../services/userService');
 const movieService = require('../services/movieService');
+const authService = require('../services/authService');
 
 /**
  * GET /movies/:id/recommend
