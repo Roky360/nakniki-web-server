@@ -61,7 +61,8 @@ const getMoviesByCategories = async (req, res) => {
 
         // Adds the watched movies to their seperate category, if there are any
         if (userID) {
-            moviesByCategoryPromises.push(movieService.getWatchedMovies(userID)); 
+            const watchedCategory = await movieService.getWatchedMovies(userID);
+            moviesByCategoryPromises.push(Promise.resolve(watchedCategory)); 
         }
 
         // Wait for all the searches to finish
