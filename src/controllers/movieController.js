@@ -48,7 +48,7 @@ const getMoviesByCategories = async (req, res) => {
     }
 
     try {
-        const userID = req.headers['user-id'];
+        const userID = req.headers['user_id'];
         // Get all promoted
         const categories = await categoryService.getAllCategories();
         const promotedCategories = categories.filter(category => category.promoted);
@@ -59,9 +59,9 @@ const getMoviesByCategories = async (req, res) => {
             return {category: category.name, movies};
         });
 
+        // Adds the watched movies to their seperate category, if there are any
         if (userID) {
-            const watchedCategory = await movieService.getWatchedMovies(userID);
-            moviesByCategoryPromises.push(Promise.resolve(watchedCategory));
+            moviesByCategoryPromises.push(movieService.getWatchedMovies(userID)); 
         }
 
         // Wait for all the searches to finish
