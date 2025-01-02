@@ -69,7 +69,7 @@ const get20MoviesByCategory = async (catID, userID) => {
         if (userID) {
             const user = await User.findById(userID);
             if (user?.movies?.length) {
-                watchedMovies = user.movies.map(movieId => mongoose.Types.ObjectId(movieId));
+                watchedMovies = user.movies;
             }
         }
 
@@ -239,7 +239,7 @@ const getWatchedMovies = async (userId) => {
         const watchedMovies = await Movie.aggregate([
             {
                 $match: {
-                    _id: { $in: user.movies.map(movieId => mongoose.Types.ObjectId(movieId)) }
+                    _id: { $in: user.movies }
                 }
             },
             { $sample: { size: 20 } } // Randomly select up to 20 movies
