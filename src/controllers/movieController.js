@@ -8,11 +8,6 @@ const authService = require("../services/authService");
  * @param {status} res
  */
 const createMovie = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         // Using the movieService createMovie function
         const movie = await movieService.createMovie(
@@ -42,11 +37,6 @@ const createMovie = async (req, res) => {
  * @param {Status, and assuming the function succeeded, movies} res
  */
 const getMoviesByCategories = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         const userID = req.headers['user_id'];
         // Get all promoted
@@ -80,11 +70,6 @@ const getMoviesByCategories = async (req, res) => {
  * @returns
  */
 const getMovieById = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         // get the movie by his ID from the service
         const movie = await movieService.getMovieById(req.params.id);
@@ -106,11 +91,6 @@ const getMovieById = async (req, res) => {
  * @param {movie/error} res
  */
 const deleteMovie = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         // try to delete the movie
         const movie = await movieService.deleteMovie(req.params.id);
@@ -136,11 +116,6 @@ const deleteMovie = async (req, res) => {
  * @returns movie, or an error, depending on input
  */
 const putMovie = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         const movie = await movieService.putMovie(req.params.id, req.body)
 
@@ -161,11 +136,6 @@ const putMovie = async (req, res) => {
  * Returns a list of all movies that matches the given query.
  */
 const searchMovies = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     const query = req.params.query;
     try {
         const results = await movieService.searchMovies(query);
