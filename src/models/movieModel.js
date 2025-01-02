@@ -12,13 +12,12 @@ const isValidDate = (value) => {
     );
 };
 
-
 // define the movie
 const MovieModel = new Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, "Movie name is required."],
+        unique: [true, "Movie with this name already exists."]
     },
     published: {
         type: String,
@@ -41,15 +40,15 @@ const MovieModel = new Schema({
     },
     thumbnail: {
         type: String,
-        required: true
+        required: [true, "Movie thumbnail is required."]
     },
     description: {
         type: String,
-        required: true
+        required: [true, "Movie description is required."]
     },
     length: {
         type: Number,
-        required: true
+        required: [true, "Movie length is required."]
     },
     categories: [
         {

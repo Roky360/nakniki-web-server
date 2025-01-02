@@ -36,21 +36,15 @@ const getUserById = async (id) => {
             // if the user is not exist return null
             return null;
         }
-        // return the user
         return user;
     } catch (error) {
-        // if the error because the user is not exist
-        if (error.name === 'CastError' && error.kind === 'ObjectId') {
-            // return null
-            return null;
-        }
-        // if there was error throw it
-        throw new Error('Error fetching user by ID: ' + error.message);
+        // invalid id (cannot be cast to ObjectId)
+        return null;
     }
 };
 
 const isUserExist = async (username, password) => {
-    // if didnt get the username or the error
+    // if didn't get the username or the error
     if (!username || !password) {
         return {success: false, message: 'Didnt get username or/and password'};
     }

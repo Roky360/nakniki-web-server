@@ -1,6 +1,6 @@
 const movieService = require('../services/movieService');
 const categoryService = require('../services/categoryService');
-const authService = require("../services/authService");
+const {parseSchemaErrors} = require("../utils/errorUtils");
 
 /**
  * POST
@@ -19,14 +19,11 @@ const createMovie = async (req, res) => {
             req.body.length,
             req.body.categories
         );
-        if (movie === null) {
-            return res.status(404).json({message: 'Invalid input!'});
-        }
-        // Return status 201 created
-        return res.status(201).json(movie);
+
+        return res.status(201).location(`api/movies/${movie._id}`).json();
     } catch (error) {
         // In case of an error, return status 400 and the error msg
-        return res.status(400).json({errors: [error.message]});
+        return res.status(400).json({errors: parseSchemaErrors(error)});
     }
 };
 
@@ -37,30 +34,28 @@ const createMovie = async (req, res) => {
  * @param {Status, and assuming the function succeeded, movies} res
  */
 const getMoviesByCategories = async (req, res) => {
-    try {
-        const userID = req.headers['user_id'];
-        // Get all promoted
-        const categories = await categoryService.getAllCategories();
-        const promotedCategories = categories.filter(category => category.promoted);
+    const userID = req.headers['user_id'];
+    // Get all promoted
+    const categories = await categoryService.getAllCategories();
+    const promotedCategories = categories.filter(category => category.promoted);
 
-        // Get up to 20 movies of each categ, using the function from movieService
-        const moviesByCategoryPromises = promotedCategories.map(async (category) => {
-            const movies = await movieService.get20MoviesByCategory(category._id, userID);
-            return {category: category.name, movies};
-        });
+    // Get up to 20 movies of each categ, using the function from movieService
+    const moviesByCategoryPromises = promotedCategories.map(async (category) => {
+        const movies = await movieService.get20MoviesByCategory(category._id, userID);
+        return {category: category.name, movies};
+    });
 
-        // Adds the watched movies to their seperate category, if there are any
-        if (userID) {
-            const watchedCategory = await movieService.getWatchedMovies(userID);
-            moviesByCategoryPromises.push(Promise.resolve(watchedCategory)); 
-        }
+    const moviesByCategory = await Promise.all(moviesByCategoryPromises);
 
-        // Wait for all the searches to finish
-        const moviesByCategory = await Promise.all(moviesByCategoryPromises);
-        res.status(200).json(moviesByCategory);
-    } catch (error) {
-        res.status(400).json({errors: ['Internal server error: ' + error.message]});
+    // Adds the watched movies to their separate category, if there are any
+    if (userID) {
+        const watchedCategory = await movieService.getWatchedMovies(userID);
+        moviesByCategory.push(watchedCategory);
+        // moviesByCategoryPromises.push(Promise.resolve(watchedCategory));
+
     }
+
+    res.status(200).json(moviesByCategory);
 };
 
 /**
@@ -70,19 +65,14 @@ const getMoviesByCategories = async (req, res) => {
  * @returns
  */
 const getMovieById = async (req, res) => {
-    try {
-        // get the movie by his ID from the service
-        const movie = await movieService.getMovieById(req.params.id);
-        if (movie == null) {
-            // if the movie not exist return not found
-            return res.status(404).json({errors: ['Movie not found']});
-        }
-        // if the movie exists return the movie
-        return res.status(200).json(movie);
-    } catch (error) {
-        // if there was error return error message
-        return res.status(400).json({errors: ['An error occurred: ' + error.message]});
+    // get the movie by his ID from the service
+    const movie = await movieService.getMovieById(req.params.id);
+    if (movie == null) {
+        // if the movie not exist return not found
+        return res.status(404).json({error: 'Movie not found'});
     }
+    // if the movie exists return the movie
+    return res.status(200).json(movie);
 }
 
 /**
@@ -97,14 +87,13 @@ const deleteMovie = async (req, res) => {
 
         if (movie == null) {
             // if the movie null so the movie is not exist
-            return res.status(404).json({errors: ['Movie not found']});
+            return res.status(404).json({error: 'Movie not found'});
         }
 
         // if the movie exists return the movie
-        return res.status(204).json(movie);
+        return res.status(204).json();
     } catch (error) {
-        // if there was error return error message
-        return res.status(400).json({errors: ['An error occurred: ' + error.message]});
+        return parseSchemaErrors(error);
     }
 }
 
