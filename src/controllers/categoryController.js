@@ -44,23 +44,29 @@ const getCategoryById = async (req, res) => {
 };
 
 const updateCategory = async (req, res) => {
-    // try to update the category
-    const category = await categoryService.updateCategory(
+    // update the category
+    const result = await categoryService.updateCategory(
         req.params.id,
         req.body.name,
         req.body.promoted
     );
 
-    if (category === null) {
-        // if the category null so the category is not exist
-        return res.status(404).json({errors: ['Category does not exist']});
+    // if success is false
+    if (!result.success) {
+        if (!result.found) {
+            // if the category not found return status 404
+            return res.status(404).json({errors: result.msg});
+        }
+        // return status 400
+        return res.status(400).json({errors: result.msg});
     }
-    // if the category exists return the category
+
+    // if the category exists return 204 NO CONTENT
     return res.status(204).json();
 };
 
 const deleteCategory = async (req, res) => {
-    // try to delete the category
+    // delete the category by the id
     const category = await categoryService.deleteCategory(req.params.id);
 
     if (category === null) {
@@ -68,7 +74,7 @@ const deleteCategory = async (req, res) => {
         return res.status(404).json({error: 'Category does not exist'});
     }
 
-    // if the category exists return status 204
+    // return 204 NO CONTENT
     return res.status(204).json();
 };
 

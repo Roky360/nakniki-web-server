@@ -1,8 +1,9 @@
 const Category = require('../models/categoryModel');
 const Movie = require('../models/movieModel');
+const {parseSchemaErrors} = require("../utils/errorUtils");
 
 const createCategory = async (name, promoted) => {
-    // try to create new category and save it
+    // create new category and save it
     name = name.trim();
     const category = new Category({name, promoted});
     return await category.save();
@@ -34,31 +35,61 @@ const getCategoryById = async (categoryId) => {
 };
 
 const updateCategory = async (categoryId, name, promoted) => {
-    // try to get the category
+    // get the category by the id
     const category = await getCategoryById(categoryId);
 
-    // if the category is not exist return null
-    if (category == null) {
-        return null;
+    // if the category is not exist return false success
+    if (category === null) {
+        return {
+            success: false,
+            found: false,
+            msg: "Category not found."
+        };
     }
 
-    if (name !== undefined) {
-        // change the new name is not undefined than change the name
-        category.name = name;
+    // prepare the updated category data
+    const updatedCategoryData = {
+        name: name !== undefined ? name : category.name,
+        promoted: promoted !== undefined ? promoted : category.promoted,
+    };
+
+    // validate the updated data
+    try {
+        // Create a temporary category object for validation
+        await (await new Category(updatedCategoryData)).validate();
+    } catch (error) {
+        return {
+            success: false,
+            found: true,
+            msg: parseSchemaErrors(error)
+        };
     }
 
-    if (promoted !== undefined) {
-        // if the promoted is not undefined than change the promoted
-        category.promoted = promoted;
-    }
+    try {
+        // apply the changes
+        const updatedCategory = await Category.findByIdAndUpdate(
+            categoryId,
+            updatedCategoryData,
+            { new: true}
+        );
 
-    // save the category and return it
-    await category.save();
-    return category;
+        // return true and the new category
+        return {
+            success: true,
+            category: updatedCategory
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            found: true,
+            msg: parseSchemaErrors(error)
+        };
+    }
 };
 
 const deleteCategory = async (categoryId) => {
-    // try to get the category
+    // get the category by the id
     const category = await getCategoryById(categoryId);
 
     // if the category is not exist return null

@@ -20,10 +20,12 @@ const createUser = async (req, res) => {
 const getUserById = async (req, res) => {
     // get the user by his ID from the service
     const user = await userService.getUserById(req.params.id);
+
     if (user == null) {
         // if the user not exist return not found
         return res.status(404).json({error: 'User not found'});
     }
+
     // if the user exists return the user
     return res.status(200).json(user);
 };

@@ -2,7 +2,7 @@ const User = require('../models/userModel');
 const recommendationService = require('../services/recommend/recommendationService');
 
 const createUser = async (username, password, email, profile_pic) => {
-    // try to create new user
+    // create new user
     const user = new User({
         username,
         password,
@@ -10,6 +10,7 @@ const createUser = async (username, password, email, profile_pic) => {
         profile_pic,
         recom_id: await recommendationService.generateRecomId()
     });
+
     // Save the new user to the database
     return await user.save();
 };
@@ -34,6 +35,7 @@ const isUserExist = async (username, password) => {
     if (!username || !password) {
         return {success: false, message: 'Didnt get username or/and password'};
     }
+
     try {
         // try to find the user by name and password and return it
         const user = await User.findOne({username, password});
