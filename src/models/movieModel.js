@@ -21,7 +21,7 @@ const MovieModel = new Schema({
     },
     published: {
         type: String,
-        required: true,
+        required: [true, "Published date is required."],
         // Ensures that the entered date is valid using the helper function 
         validate: {
             validator: isValidDate,
@@ -30,10 +30,10 @@ const MovieModel = new Schema({
     },
     actors: {
         type: [String],
-        required: true,
+        required: [true, "Actors list is required."],
         validate: {
             validator: function (arr) {
-                return arr.every(actor => typeof actor === 'string' && actor.trim() !== '');
+                return arr.length > 0 && arr.every(actor => typeof actor === 'string' && actor.trim() !== '');
             },
             message: 'Actors should be an array of non empty strings seperated by commas.'
         }

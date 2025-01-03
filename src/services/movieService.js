@@ -3,6 +3,7 @@ const Category = require('../models/categoryModel');
 const categoryService = require('../services/categoryService');
 const recommendationService = require('../services/recommend/recommendationService');
 const User = require('../models/userModel');
+const {parseSchemaErrors} = require("../utils/errorUtils");
 
 /**
  *
@@ -34,11 +35,15 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
     }
     // Saves the valid category IDs
     const validCategoryIds = validCategories.map(category => category._id);
+    // check that actors are valid
+    if (actors && actors.length > 0) {
+        actors = actors.split(',').map(actor => actor.trim())
+    }
     // Create the movie with the valid category IDs
     const movie = new Movie({
         name,
         published,
-        actors: actors.split(',').map(actor => actor.trim()),
+        actors: actors,
         thumbnail,
         description,
         length,
@@ -139,70 +144,91 @@ const deleteMovie = async (id) => {
  * Swaps a movie's settings with new ones, or creates an altogether movie if the requested ID does not exist
  * @param {the movie's ID, string} id
  * @param {movie schema, all fields that belong to a movie} movieData
- * @returns movie, null or error, depending on the result
+ * @returns {{success, found, msg}} success is true if there were no errors, found is true if the :id is valid,
+ * msg is set in case of an error, together with success=false.
  */
 const putMovie = async (id, movieData) => {
-    try {
-        // Check if the movie exists
-        const existingMovie = await Movie.findById(id);
-
-        // Validate the category IDs
-        const categoryDocs = await Promise.all(
-            movieData.categories.map(async (id) => await categoryService.getCategoryById(id))
-        );
-
-        // Returns an error if at least one category is incorrect, bad users deserve punishment >:D
-        const invalidCategories = categoryDocs.filter(category => category === null);
-        if (invalidCategories.length > 0) {
-            return null;
+    // Check if the movie exists
+    const existingMovie = await getMovieById(id);
+    if (!existingMovie) {
+        return {
+            success: false,
+            found: false,
+            msg: "Movie not found."
         }
-
-        const validCategories = categoryDocs.filter(category => category !== null);
-        if (validCategories.length === 0) {
-            return null;
-        }
-
-        const validCategoryIds = validCategories.map(category => category._id);
-        const validActorList = movieData.actors.split(',').map(actor => actor.trim());
-
-        let recom_id;
-
-        if (existingMovie) {
-            recom_id = existingMovie.recom_id;
-        } else {
-            recom_id = await recommendationService.generateRecomId();
-        }
-
-        // Build the updated movie object
-        const updatedMovieData = {
-            name: movieData.name,
-            published: movieData.published,
-            actors: validActorList,
-            thumbnail: movieData.thumbnail,
-            description: movieData.description,
-            length: movieData.length,
-            categories: validCategoryIds,
-            recom_id,
-        };
-
-        // Create a new movie instance for validation
-        const movieToValidate = new Movie(updatedMovieData);
-
-        // Validate the data explicitly
-        await movieToValidate.validate();
-
-        const newMovie = await Movie.findOneAndReplace(
-            {_id: id},
-            updatedMovieData,
-            {new: true, upsert: true}
-        );
-
-
-        return newMovie;
-
-    } catch (error) {
-        throw new Error('Error putting movie: ' + error.message);
     }
+
+    // Validate the category IDs
+    const categoryDocs = await Promise.all(
+        movieData.categories.map(async (id) => await categoryService.getCategoryById(id))
+    );
+
+    // Returns an error if at least one category is incorrect, bad users deserve punishment >:D
+    const invalidCategories = categoryDocs.filter(category => category === null);
+    if (invalidCategories.length > 0) {
+        return {
+            success: false,
+            found: true,
+            msg: "One or more of the categories doesn't exist."
+        };
+    }
+
+    const validCategories = categoryDocs.filter(category => category !== null);
+    if (validCategories.length === 0) {
+        return {
+            success: false,
+            found: true,
+            msg: "At least one category has to be provided."
+        };
+    }
+
+    // check that actors are valid
+    if (movieData.actors && movieData.actors.length > 0) {
+        movieData.actors = movieData.actors.split(',').map(actor => actor.trim())
+    }
+
+    // recommendation id - set later
+    const validCategoryIds = validCategories.map(category => category._id);
+    let recom_id = 0;
+    // Build the updated movie object
+    const updatedMovieData = {
+        name: movieData.name,
+        published: movieData.published,
+        actors: movieData.actors,
+        thumbnail: movieData.thumbnail,
+        description: movieData.description,
+        length: movieData.length,
+        categories: validCategoryIds,
+        recom_id,
+    };
+
+    // validate all the fields
+    try {
+        // Create a new movie instance *for validation*
+        await (await new Movie(updatedMovieData)).validate();
+    } catch (err) {
+        return {
+            success: false,
+            found: true,
+            msg: parseSchemaErrors(err)
+        };
+    }
+
+    // set movie recommendation id as the existing movie id - or generate a new one if it doesn't exist
+    if (existingMovie) {
+        recom_id = existingMovie.recom_id;
+    } else {
+        recom_id = await recommendationService.generateRecomId();
+    }
+    updatedMovieData.recom_id = recom_id;
+
+    await Movie.findOneAndReplace(
+        {_id: id},
+        updatedMovieData,
+        {new: true, upsert: true}
+    );
+
+    return {success: true};
 };
 
 /**

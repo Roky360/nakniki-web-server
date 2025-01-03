@@ -54,7 +54,7 @@ exports.addWatchedMovie = async (req, res) => {
     }
 
     try {
-        const result = await recommendationService.markAsWatched(userId, movieId);
+        await recommendationService.markAsWatched(userId, movieId);
         res.status(204).json();
     } catch (err) {
         res.status(400).json({errors: parseSchemaErrors(err)});

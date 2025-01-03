@@ -51,8 +51,6 @@ const getMoviesByCategories = async (req, res) => {
     if (userID) {
         const watchedCategory = await movieService.getWatchedMovies(userID);
         moviesByCategory.push(watchedCategory);
-        // moviesByCategoryPromises.push(Promise.resolve(watchedCategory));
-
     }
 
     res.status(200).json(moviesByCategory);
@@ -105,17 +103,20 @@ const deleteMovie = async (req, res) => {
  * @returns movie, or an error, depending on input
  */
 const putMovie = async (req, res) => {
-    try {
-        const movie = await movieService.putMovie(req.params.id, req.body)
+    const result = await movieService.putMovie(req.params.id, req.body)
 
-        if (movie === null) {
-            // if the movie null so the movie is not exist
-            return res.status(400).json({errors: ['Invalid input']});
+    // upon error return the error message
+    if (!result.success) {
+        if (result.found) {
+            return res.status(400).json({errors: result.msg});
         }
-
-        return res.status(200).json(movie);
-    } catch (error) {
-        return res.status(400).json({errors: ['Bad requests ' + error.message]});
+        return res.status(404).json({error: result.msg});
+    }
+    // upon success
+    if (result.created) {
+        res.status(201).location(`api/movies/${result.msg._id}`).json();
+    } else {
+        return res.status(204).json();
     }
 }
 
@@ -130,7 +131,7 @@ const searchMovies = async (req, res) => {
         const results = await movieService.searchMovies(query);
         res.status(200).json(results);
     } catch (err) {
-        res.status(400).json({errors: [err]});
+        res.status(400).json({errors: parseSchemaErrors(err)});
     }
 }
 
