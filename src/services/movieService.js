@@ -36,7 +36,7 @@ const createMovie = async (name, published, actors, thumbnail, description, leng
     // Saves the valid category IDs
     const validCategoryIds = validCategories.map(category => category._id);
     // check that actors are valid
-    if (actors && actors.length > 0) {
+    if (actors && typeof actors === "string" && actors.length > 0) {
         actors = actors.split(',').map(actor => actor.trim())
     }
     // Create the movie with the valid category IDs
@@ -183,7 +183,7 @@ const putMovie = async (id, movieData) => {
     }
 
     // check that actors are valid
-    if (movieData.actors && movieData.actors.length > 0) {
+    if (movieData.actors && typeof movieData.actors === "string" && movieData.actors.length > 0) {
         movieData.actors = movieData.actors.split(',').map(actor => actor.trim())
     }
 

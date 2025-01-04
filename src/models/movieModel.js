@@ -35,7 +35,7 @@ const MovieModel = new Schema({
             validator: function (arr) {
                 return arr.length > 0 && arr.every(actor => typeof actor === 'string' && actor.trim() !== '');
             },
-            message: 'Actors should be an array of non empty strings seperated by commas.'
+            message: 'Actors should be a string of the actor names seperated by commas.'
         }
     },
     thumbnail: {
