@@ -8,7 +8,7 @@ const categoryModel = new Schema({
         unique: [true, "Category name is occupied."],
         validate: {
             validator: (name) => name.trim() && name !== "Watched",
-            message: 'Category name cannot be "Watched".'
+            message: 'Category name must not be empty and cannot be "Watched".'
         }
     },
     promoted: {
