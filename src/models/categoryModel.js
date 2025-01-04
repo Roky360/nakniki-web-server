@@ -2,14 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const categoryModel = new Schema({
-    name : {
+    name: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, "Category name is required."],
+        unique: [true, "Category name is occupied."],
+        validate: {
+            validator: (name) => name.trim() && name !== "Watched",
+            message: 'Category name must not be empty and cannot be "Watched".'
+        }
     },
-    promoted : {
-        type : Boolean,
-        default : false
+    promoted: {
+        type: Boolean,
+        default: false
     }
 });
 

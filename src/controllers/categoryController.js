@@ -1,114 +1,82 @@
 const categoryService = require('../services/categoryService');
-const authService = require('../services/authService');
+const {parseSchemaErrors} = require("../utils/errorUtils");
 
 const createCategory = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         const category = await categoryService.createCategory(
             req.body.name,
             req.body.promoted
         );
         // return status 201 created
-        return res.status(201).json(category);
+        return res.status(201).location(`api/categories/${category._id}`).json();
     } catch (error) {
         // if there was error return error message
-        return res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({errors: parseSchemaErrors(error)});
     }
 };
 
 const getAllCategories = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         // try to get the categories using category services
         const categories = await categoryService.getAllCategories();
         // return the categories with status 200
         return res.status(200).json(categories);
-    }
-    catch (error) {
+    } catch (error) {
         // if there was error return the error
-        return res.status(400).json({ errors: [error.message] });
+        return res.status(400).json({errors: [error.message]});
     }
 };
 
 const getCategoryById = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     try {
         // get the category by his ID from the service
         const category = await categoryService.getCategoryById(req.params.id);
-        if (category == null) {
+        if (category === null) {
             // if the category not exist return not found
-            return res.status(404).json({ errors: ['Category not found'] });
+            return res.status(404).json({errors: ['Category not found']});
         }
         // if the category exists return the category
         return res.status(200).json(category);
     } catch (error) {
         // if there was error return error message
-        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
+        return res.status(400).json({errors: ['An error occurred: ' + error.message]});
     }
 };
 
 const updateCategory = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
+    // update the category
+    const result = await categoryService.updateCategory(
+        req.params.id,
+        req.body.name,
+        req.body.promoted
+    );
 
-    try {
-        // try to update the category
-        const category = await categoryService.updateCategory(
-            req.params.id,
-            req.body.name,
-            req.body.promoted
-        );
-
-        if (category == null) {
-            // if the category null so the category is not exist
-            return res.status(404).json({ errors: ['Category does not exist'] });
+    // if success is false
+    if (!result.success) {
+        if (!result.found) {
+            // if the category not found return status 404
+            return res.status(404).json({errors: result.msg});
         }
-        // if the category exists return the category
-        return res.status(200).json(category);
+        // return status 400
+        return res.status(400).json({errors: result.msg});
     }
-    catch (error) {
-        // if there was error return error message
-        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
-    }
+
+    // if the category exists return 204 NO CONTENT
+    return res.status(204).json();
 };
 
 const deleteCategory = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
+    // delete the category by the id
+    const category = await categoryService.deleteCategory(req.params.id);
+
+    if (category === null) {
+        // if the category null so the category is not exist
+        return res.status(404).json({error: 'Category does not exist'});
     }
 
-    try {
-        // try to delete the category
-        const category = await categoryService.deleteCategory(req.params.id);
-
-        if (category == null) {
-            // if the category null so the category is not exist
-            return res.status(404).json({ errors: ['Category does not exist'] });
-        }
-
-        // if the category exists return status 204
-        return res.status(204).json();
-    }
-    catch (error) {
-        // if there was error return error message
-        return res.status(400).json({ errors: ['An error occurred: ' + error.message] });
-    }
+    // return 204 NO CONTENT
+    return res.status(204).json();
 };
 
 
-module.exports = { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory };
+module.exports = {createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory};

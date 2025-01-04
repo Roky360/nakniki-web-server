@@ -8,7 +8,7 @@ const globalCounterName = "global_recom_counter";
 /**
  * Generates a unique ID for the recommendation system.
  */
-exports.generateRecomId = async () => {
+const generateRecomId = async () => {
     const counterDoc = await recomModel.findOneAndUpdate(
         {name: globalCounterName},
         {$inc: {value: 1}},
@@ -25,14 +25,22 @@ exports.generateRecomId = async () => {
  * @returns Movie document - if operation was successful.
  * @throws Error if user/movie does not exist.
  */
-exports.markAsWatched = async (userId, movieId) => {
+const markAsWatched = async (userId, movieId) => {
     // get user and movies docs and check they exist
-    const userDoc = await User.findById(userId);
-    const movieDoc = await Movie.findById(movieId);
+    let userDoc;
+    let movieDoc;
+    try {
+        userDoc = await User.findById(userId);
+        movieDoc = await Movie.findById(movieId);
+    } catch (_) {
+        return {
+            success: false,
+            msg: "Invalid user or movie ID."
+        };
+    }
     // get recommendation IDs
     const userRecomId = userDoc.get('recom_id');
     const movieRecomId = movieDoc.get('recom_id');
-
     try {
         // decide whether to send POST or PATCH request
         if (userDoc.get('first_watch') === true) {
@@ -48,9 +56,15 @@ exports.markAsWatched = async (userId, movieId) => {
         // add the movie id to the watched array of the user
         await userDoc.updateOne({$addToSet: {'movies': movieId}});
 
-        return movieDoc;
+        return {
+            success: true,
+            movie: movieDoc
+        };
     } catch (err) {
-        throw err;
+        return {
+            success: false,
+            msg: err.message
+        };
     }
 }
 
@@ -60,19 +74,31 @@ exports.markAsWatched = async (userId, movieId) => {
  * @param movieId
  * @returns Movie document if operation was successful, or null if something went wrong.
  */
-exports.markAsUnwatched = async (userId, movieId) => {
+const markAsUnwatched = async (userId, movieId) => {
     // get user and movies docs and check they exist
-    const userDoc = await User.findById(userId);
-    const movieDoc = await Movie.findById(movieId);
+    let userDoc;
+    let movieDoc;
+    try {
+        userDoc = await User.findById(userId);
+        movieDoc = await Movie.findById(movieId);
+    } catch (_) {
+        return {
+            success: false,
+            msg: "Invalid user or movie ID."
+        };
+    }
     // get recommendation IDs
     const userRecomId = userDoc.get('recom_id');
     const movieRecomId = movieDoc.get('recom_id');
     try {
         await sendRequest(`DELETE ${userRecomId} ${movieRecomId}`);
         await userDoc.updateOne({$pull: {'movies': movieId}});
-        return movieDoc;
+        return {success: true};
     } catch (err) {
-        return null;
+        return {
+            success: false,
+            msg: err.message
+        };
     }
 }
 
@@ -81,16 +107,24 @@ exports.markAsUnwatched = async (userId, movieId) => {
  * an array of the recommended movies.
  * @param userId
  * @param movieId
- * @returns {Promise<{status, movies}>}
+ * @returns {Promise<{success, msg | movies}>}
  */
-exports.recommend = async (userId, movieId) => {
+const recommend = async (userId, movieId) => {
     // get user and movies docs and check they exist
-    const userDoc = await User.findById(userId);
-    const movieDoc = await Movie.findById(movieId);
+    let userDoc;
+    let movieDoc;
+    try {
+        userDoc = await User.findById(userId);
+        movieDoc = await Movie.findById(movieId);
+    } catch (_) {
+        return {
+            success: false,
+            msg: "Invalid user or movie ID."
+        };
+    }
     // get recommendation IDs
     const userRecomId = userDoc.get('recom_id');
     const movieRecomId = movieDoc.get('recom_id');
-
     try {
         const res = await sendRequest(`GET ${userRecomId} ${movieRecomId}`);
         // convert the recommended movies to an array of numbers
@@ -99,13 +133,13 @@ exports.recommend = async (userId, movieId) => {
             .map(e => Number(e));
 
         return {
-            status: res.status,
+            success: true,
             movies: await getMoviesByRecomId(movieRecomIds)
         };
     } catch (err) {
         return {
-            status: 400,
-            movies: err
+            success: false,
+            msg: err
         };
     }
 }
@@ -121,3 +155,5 @@ const getMoviesByRecomId = async (recomIds) => {
     }
     return Movie.find({recom_id: {$in: recomIds}});
 }
+
+module.exports = {generateRecomId, recommend, markAsUnwatched, markAsWatched};

@@ -1,7 +1,7 @@
 const recommendationService = require('../services/recommend/recommendationService');
 const userService = require('../services/userService');
 const movieService = require('../services/movieService');
-const authService = require('../services/authService');
+const {parseSchemaErrors} = require("../utils/errorUtils");
 
 /**
  * GET /movies/:id/recommend
@@ -11,29 +11,24 @@ const authService = require('../services/authService');
  * 400 upon failure or invalid arguments.
  */
 exports.recommendMovies = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
     // argument checks
     if (!userId || !movieId) {
-        return res.status(400).json({errors: ["User and movie IDs required"]});
+        return res.status(400).json({error: "User and movie IDs required"});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).json({errors: ['User not found']});
+        return res.status(400).json({error: 'User not found'});
     }
     if (await movieService.getMovieById(movieId) === null) {
-        return res.status(400).json({errors: ['Movie not found']});
+        return res.status(400).json({error: 'Movie not found'});
     }
 
     const serverRes = await recommendationService.recommend(userId, movieId);
-    if (serverRes.status === 200) {
+    if (serverRes.success) {
         res.status(200).json(serverRes.movies);
     } else {
-        res.status(serverRes.status).json({errors: [serverRes.movies]});
+        res.status(400).json({errors: parseSchemaErrors(serverRes.msg)});
     }
 }
 
@@ -45,28 +40,23 @@ exports.recommendMovies = async (req, res) => {
  * 400 upon failure with error message in payload.
  */
 exports.addWatchedMovie = async (req, res) => {
-    // auth user
-    if (!await authService.authenticateUser(req.headers['user_id'])) {
-        return res.status(401).json({errors: authService.AuthFailedMsg});
-    }
-
     const userId = req.headers['user_id'];
     const movieId = req.params.id;
     // argument checks
     if (!userId || !movieId) {
-        return res.status(400).json({errors: ["User and movie IDs required"]});
+        return res.status(400).json({error: "User and movie IDs required"});
     }
     if (await userService.getUserById(userId) === null) {
-        return res.status(400).json({errors: ['User not found']});
+        return res.status(400).json({error: 'User not found'});
     }
     if (await movieService.getMovieById(movieId) === null) {
-        return res.status(400).json({errors: ['Movie not found']});
+        return res.status(400).json({error: 'Movie not found'});
     }
 
     try {
-        const result = await recommendationService.markAsWatched(userId, movieId);
-        res.status(201).json(result);
+        await recommendationService.markAsWatched(userId, movieId);
+        res.status(204).json();
     } catch (err) {
-        res.status(400).json({errors: [err.message]});
+        res.status(400).json({errors: parseSchemaErrors(err)});
     }
 }

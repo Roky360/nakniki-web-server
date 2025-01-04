@@ -12,17 +12,16 @@ const isValidDate = (value) => {
     );
 };
 
-
 // define the movie
 const MovieModel = new Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, "Movie name is required."],
+        unique: [true, "Movie with this name already exists."]
     },
     published: {
         type: String,
-        required: true,
+        required: [true, "Published date is required."],
         // Ensures that the entered date is valid using the helper function 
         validate: {
             validator: isValidDate,
@@ -31,25 +30,25 @@ const MovieModel = new Schema({
     },
     actors: {
         type: [String],
-        required: true,
+        required: [true, "Actors list is required."],
         validate: {
             validator: function (arr) {
-                return arr.every(actor => typeof actor === 'string' && actor.trim() !== '');
+                return arr.length > 0 && arr.every(actor => typeof actor === 'string' && actor.trim() !== '');
             },
             message: 'Actors should be an array of non empty strings seperated by commas.'
         }
     },
     thumbnail: {
         type: String,
-        required: true
+        required: [true, "Movie thumbnail is required."]
     },
     description: {
         type: String,
-        required: true
+        required: [true, "Movie description is required."]
     },
     length: {
         type: Number,
-        required: true
+        required: [true, "Movie length is required."]
     },
     categories: [
         {

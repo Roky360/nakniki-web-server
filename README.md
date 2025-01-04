@@ -20,6 +20,7 @@ This is the web server of the Netflix project.
     ```
    
 2. Run **MongoDB server**, and our **recommendation server** using the instructions in [the repo](https://github.com/Roky360/project-netflix).
+   Please make sure that you first set a port for the recommendation server in its env file.
 
 3. **Setup env file:**
 
@@ -27,11 +28,11 @@ This is the web server of the Netflix project.
     Fill the variables with appropriate values and make sure that the NODE_ENV value is the same as the env file name (default is "example").
     
     **Notes:**
-    - Ensure that in every URL you specify in the env file that uses `localhost`, write `host.docker.internal` instead to make sure docker can actually access localhost.
+    - Ensure that in every url you specify in the env file that uses `localhost`, write `host.docker.internal` instead to make sure docker can actually access localhost.
       For example: instead of `localhost:12345` write `host.docker.internal:12345`.
-    - The MONGODB_URI is MongoDB connection string **with the database name at the end**. For example: `mongodb://host.docker.internal:27017/my_db`
-    - PORT is the port that the web server will run on.
-    - RECOM_URL is the recommendation server url. Note that by default we set it to run on port 20200, so a valid URL may be: `host.docker.internal:20200`.
+    - The `MONGODB_URI` is MongoDB connection string **with the database name at the end**. For example: `mongodb://host.docker.internal:27017/my_db`
+    - `PORT` is the port that the web server will run on.
+    - `RECOM_URL` is the recommendation server url. For example, if you set it to run on port 8080, the RECOM_URL should be: `host.docker.internal:8080`.
     
 4. **Run with docker:** run the following command to run the web server, with specifying the path to the env file you just set up, for example:
     ```bash

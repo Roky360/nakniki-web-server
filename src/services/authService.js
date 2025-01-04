@@ -13,7 +13,7 @@ const authenticateUser = async (token) => {
     }
     try {
         // checks if the user exists
-        return User.findById(token) !== null;
+        return (await User.findById(token)) !== null;
     } catch (err) {
         return false;
     }
