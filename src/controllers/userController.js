@@ -25,9 +25,14 @@ const getUserById = async (req, res) => {
         // if the user not exist return not found
         return res.status(404).json({error: 'User not found'});
     }
+    // exclude sensitive and irrelevant fields
+    const userObj = user.toObject();
+    delete userObj.password;
+    delete userObj.recom_id;
+    delete userObj.first_watch;
 
     // if the user exists return the user
-    return res.status(200).json(user);
+    return res.status(200).json(userObj);
 };
 
 const isUserExist = async (req, res) => {
@@ -44,7 +49,7 @@ const isUserExist = async (req, res) => {
 
     // get the user and return his id
     const user = await userService.getUserByUsernameAndPassword(username, password);
-    return res.status(200).json({userId: user._id});
+    return res.status(200).json({user_id: user._id});
 };
 
 module.exports = {createUser, getUserById, isUserExist};
