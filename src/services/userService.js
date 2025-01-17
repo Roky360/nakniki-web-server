@@ -50,6 +50,14 @@ const isUserExist = async (username, password) => {
     }
 };
 
+const isAdmin = async (userId) => {
+    const userDoc = await getUserById(userId);
+    if (!userDoc) {
+        return false;
+    }
+    return userDoc['is_admin'];
+}
+
 const getUserByUsernameAndPassword = async (username, password) => {
     try {
         // try to find the user
@@ -66,4 +74,4 @@ const getUserByUsernameAndPassword = async (username, password) => {
     }
 };
 
-module.exports = {createUser, getUserById, isUserExist, getUserByUsernameAndPassword};
+module.exports = {createUser, getUserById, isUserExist, isAdmin, getUserByUsernameAndPassword};

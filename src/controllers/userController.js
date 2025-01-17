@@ -1,6 +1,9 @@
 const userService = require('../services/userService');
 const {parseSchemaErrors} = require("../utils/errorUtils");
 
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
+
 const createUser = async (req, res) => {
     try {
         // create the user using the user service
@@ -49,7 +52,10 @@ const isUserExist = async (req, res) => {
 
     // get the user and return his id
     const user = await userService.getUserByUsernameAndPassword(username, password);
-    return res.status(200).json({user_id: user._id});
+    // prepare auth token
+    const data = {timestamp: Date.now().toString(), user_id: user._id.toString()}
+    const token = jwt.sign(data, JWT_SECRET)
+    return res.status(200).json({token});
 };
 
 module.exports = {createUser, getUserById, isUserExist};
