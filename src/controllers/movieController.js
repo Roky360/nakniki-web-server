@@ -135,4 +135,23 @@ const searchMovies = async (req, res) => {
     }
 }
 
-module.exports = {createMovie, getMoviesByCategories, getMovieById, deleteMovie, putMovie, searchMovies};
+const getAllMoviesByCategories = async (req, res) => {
+    const catDocs = await categoryService.getAllCategories();
+    const moviesByCategories = catDocs.map(async (category) => {
+        return {
+            category: category.name,
+            movies: await movieService.getMoviesByCategory(category._id)
+        }
+    });
+    return moviesByCategories;
+}
+
+module.exports = {
+    createMovie,
+    getMoviesByCategories,
+    getMovieById,
+    deleteMovie,
+    putMovie,
+    searchMovies,
+    getAllMoviesByCategories,
+};

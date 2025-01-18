@@ -1,22 +1,26 @@
 const User = require('../models/userModel');
+const jwt = require("jsonwebtoken");
 
 const AuthFailedMsg = "Authentication failed (provide a valid user_id header).";
+const AdminAuthFailMsg = "Authentication failed, not an administrator user.";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * Authenticates a user given its auth-token.
- * @param token User auth token.
- * @returns {Promise<boolean>}
+ * @param token jwt token.
+ * @returns {Promise<string | null>} returns the user id upon success.
  */
 const authenticateUser = async (token) => {
     if (!token) {
         return false;
     }
     try {
-        // checks if the user exists
-        return (await User.findById(token)) !== null;
+        const data = jwt.verify(token, JWT_SECRET);
+        return data.user_id;
     } catch (err) {
-        return false;
+        return null;
     }
 }
 
-module.exports = {AuthFailedMsg, authenticateUser};
+module.exports = {AuthFailedMsg, AdminAuthFailMsg, authenticateUser};

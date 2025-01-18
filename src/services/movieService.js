@@ -294,6 +294,18 @@ const searchMovies = async (query) => {
         ]
     });
 }
+
+/**
+ * Returns all the movie documents that are in the given category.
+ * @param categoryId
+ * @returns {Promise<void>}
+ */
+const getMoviesByCategory = async (categoryId) => {
+    return Movie.find({
+        $in: {categories: categoryId},
+    });
+}
+
 module.exports = {
     createMovie,
     get20MoviesByCategory,
@@ -302,4 +314,5 @@ module.exports = {
     putMovie,
     getWatchedMovies,
     searchMovies,
+    getMoviesByCategory,
 };

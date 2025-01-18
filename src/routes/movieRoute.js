@@ -21,4 +21,7 @@ router.route('/:id/recommend')
 router.route('/search/:query')
     .get(authUser, movieController.searchMovies);
 
+router.route('/all')
+    .get(authUser, movieController.getAllMoviesByCategories)
+
 module.exports = router;
