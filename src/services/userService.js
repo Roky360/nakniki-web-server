@@ -55,7 +55,7 @@ const isAdmin = async (userId) => {
     if (!userDoc) {
         return false;
     }
-    return userDoc['is_admin'];
+    return userDoc.get('is_admin');
 }
 
 const getUserByUsernameAndPassword = async (username, password) => {

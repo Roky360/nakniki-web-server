@@ -15,7 +15,6 @@ const createMovie = async (req, res) => {
     const pathFormatted = req.file.path.replace(/\\/g, '/');
     const thumbnailRelPath = path.join("/api", pathFormatted.substring(pathFormatted.indexOf("/uploads"))).replace(/\\/g, '/');
 
-
     try {
         // Using the movieService createMovie function
         const movie = await movieService.createMovie(
