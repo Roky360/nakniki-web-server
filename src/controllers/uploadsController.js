@@ -1,15 +1,21 @@
-const {upload, UPLOADS_DIR} = require('../services/uploadsService');
+const {UPLOADS_DIR} = require('../services/uploadsService');
 const path = require('path');
 const fs = require('fs');
 
+/**
+ * Uploads a given movie file to the server.
+ * Returns a relative URL to that movie upon success. (for example: '/uploads/movies/example.mp4')
+ * @returns {Promise<*>}
+ */
 const uploadVideo = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({error: 'No video file provided.'});
     }
 
-    // success, return the video file name which is the movie id
-    const videoId = req.file.fileName;
-    res.status(200).json({videoId: videoId});
+    // success, return the video file URL
+    const pathFormatted = req.file.path.replace(/\\/g, '/');
+    const movieRelPath = path.join("/api", pathFormatted.substring(pathFormatted.indexOf("/uploads"))).replace(/\\/g, '/');
+    res.status(201).location(movieRelPath).json();
 }
 
 const getVideo = async (req, res) => {

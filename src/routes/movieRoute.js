@@ -4,9 +4,10 @@ const router = express.Router();
 const {authUser} = require('../controllers/authController');
 const movieController = require('../controllers/movieController');
 const recommendController = require('../controllers/recommendController');
+const {upload} = require("../services/uploadsService");
 
 router.route('/')
-    .post(authUser, movieController.createMovie)
+    .post(authUser, upload.single('thumbnail'), movieController.createMovie)
     .get(authUser, movieController.getMoviesByCategories);
 
 router.route('/:id')

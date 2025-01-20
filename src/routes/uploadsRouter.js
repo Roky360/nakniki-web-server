@@ -8,11 +8,11 @@ const {upload} = require("../services/uploadsService");
 // require admin privileges for all these endpoints
 
 router.route('/')
-    .post(authUser, authAdmin, upload.single('video'), uploadsController.uploadVideo);
+    .post(authUser, authAdmin, upload.single('movie'), uploadsController.uploadVideo);
 
 router.route('/:id')
     .get(authUser, authAdmin, uploadsController.getVideo)
-    .put(authUser, authAdmin, upload.single('video'), uploadsController.putVideo)
+    .put(authUser, authAdmin, upload.single('movie'), uploadsController.putVideo)
     .delete(authUser, authAdmin, uploadsController.deleteVideo);
 
 module.exports = router;

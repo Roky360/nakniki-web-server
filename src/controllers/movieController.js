@@ -1,6 +1,7 @@
 const movieService = require('../services/movieService');
 const categoryService = require('../services/categoryService');
 const {parseSchemaErrors} = require("../utils/errorUtils");
+const path = require("path");
 
 /**
  * POST
@@ -8,13 +9,20 @@ const {parseSchemaErrors} = require("../utils/errorUtils");
  * @param {status} res
  */
 const createMovie = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({error: 'Thumbnail not provided or invalid.'});
+    }
+    const pathFormatted = req.file.path.replace(/\\/g, '/');
+    const thumbnailRelPath = path.join("/api", pathFormatted.substring(pathFormatted.indexOf("/uploads"))).replace(/\\/g, '/');
+
+
     try {
         // Using the movieService createMovie function
         const movie = await movieService.createMovie(
             req.body.name,
             req.body.published,
             req.body.actors,
-            req.body.thumbnail,
+            thumbnailRelPath,
             req.body.description,
             req.body.length,
             req.body.categories

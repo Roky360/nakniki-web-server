@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require('path');
 const mongoose = require("mongoose");
 
 const {env} = require("custom-env");
@@ -29,6 +30,8 @@ app.use(express.json());
 
 // set app endpoints
 app.use('/api', appRouter);
+
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 console.log(`Running on http://localhost:${process.env.PORT}`);
 app.listen(process.env.PORT);
