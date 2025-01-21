@@ -282,11 +282,14 @@ const searchMovies = async (query) => {
     })).map(category => category._id);
     // try to convert the query to a number to match the length field
     const lengthFromQuery = Number.parseInt(query);
+    let dateFromQuery = new Date(query);
+    if (isNaN(dateFromQuery)) {
+        dateFromQuery = new Date(0);
+    }
 
     return Movie.find({
         $or: [
             {name: {$regex: query, $options: 'i'}},
-            {published: {$regex: query, $options: 'i'}},
             {actors: {$regex: query, $options: 'i'}},
             {description: {$regex: query, $options: 'i'}},
             {length: isNaN(lengthFromQuery) ? 0 : lengthFromQuery},

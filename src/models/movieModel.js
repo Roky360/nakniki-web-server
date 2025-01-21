@@ -3,17 +3,8 @@ const Schema = mongoose.Schema;
 
 // Assistant function, to ensure that the entered date is valid
 const isValidDate = (value) => {
-    // const [day, month, year] = value.split('/').map(Number);
-    // const date = new Date(year, month - 1, day);
     const dateParsed = Date.parse(value);
     return !isNaN(dateParsed);
-
-    // const date = new Date(dateParsed);
-    // return (
-    //     date.getFullYear() === year &&
-    //     date.getMonth() === month - 1 &&
-    //     date.getDate() === day
-    // );
 };
 
 // define the movie
