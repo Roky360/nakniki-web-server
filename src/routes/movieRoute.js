@@ -10,6 +10,9 @@ router.route('/')
     .post(authUser, upload.single('thumbnail'), movieController.createMovie)
     .get(authUser, movieController.getMoviesByCategories);
 
+router.route('/all')
+    .get(authUser, movieController.getAllMoviesByCategories)
+
 router.route('/:id')
     .get(authUser, movieController.getMovieById)
     .delete(authUser, movieController.deleteMovie)
@@ -21,8 +24,5 @@ router.route('/:id/recommend')
 
 router.route('/search/:query')
     .get(authUser, movieController.searchMovies);
-
-router.route('/all')
-    .get(authUser, movieController.getAllMoviesByCategories)
 
 module.exports = router;
