@@ -304,8 +304,8 @@ const searchMovies = async (query) => {
  * @returns {Promise<void>}
  */
 const getMoviesByCategory = async (categoryId) => {
-    return Movie.find({
-        $in: {categories: categoryId},
+    return await Movie.find({
+        categories: {$in: [categoryId]},
     });
 }
 

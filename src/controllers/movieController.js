@@ -144,13 +144,13 @@ const searchMovies = async (req, res) => {
 
 const getAllMoviesByCategories = async (req, res) => {
     const catDocs = await categoryService.getAllCategories();
-    const moviesByCategories = catDocs.map(async (category) => {
+    const moviesByCategories = await Promise.all(catDocs.map(async (category) => {
         return {
             category: category.name,
             movies: await movieService.getMoviesByCategory(category._id)
         }
-    });
-    return moviesByCategories;
+    }));
+    res.status(200).json(moviesByCategories);
 }
 
 module.exports = {
