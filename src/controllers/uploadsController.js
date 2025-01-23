@@ -34,7 +34,7 @@ const getVideo = async (req, res) => {
 
 const putVideo = async (req, res) => {
     const videoId = req.params.id;
-    const videoPath = path.join(UPLOADS_DIR, videoId);
+    const videoPath = path.join(MOVIES_DIR, videoId);
 
     if (!req.file) {
         return res.status(400).json({error: 'No video file provided.'});
