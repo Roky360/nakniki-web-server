@@ -1,4 +1,4 @@
-const {UPLOADS_DIR} = require('../services/uploadsService');
+const {UPLOADS_DIR, MOVIES_DIR} = require('../services/uploadsService');
 const path = require('path');
 const fs = require('fs');
 
@@ -20,7 +20,7 @@ const uploadVideo = async (req, res) => {
 
 const getVideo = async (req, res) => {
     const videoId = req.params.id;
-    const videoPath = path.join(UPLOADS_DIR, videoId);
+    const videoPath = path.join(MOVIES_DIR, videoId);
 
     // Check if the file exists
     fs.access(videoPath, fs.constants.F_OK, (err) => {
@@ -66,7 +66,7 @@ const putVideo = async (req, res) => {
 
 const deleteVideo = async (req, res) => {
     const videoId = req.params.id;
-    const videoPath = path.join(UPLOADS_DIR, videoId);
+    const videoPath = path.join(MOVIES_DIR, videoId);
 
     // check if the file exists
     fs.access(videoPath, fs.constants.F_OK, (err) => {
