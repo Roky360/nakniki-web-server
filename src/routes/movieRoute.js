@@ -16,7 +16,7 @@ router.route('/all')
 router.route('/:id')
     .get(authUser, movieController.getMovieById)
     .delete(authUser, movieController.deleteMovie)
-    .put(authUser, movieController.putMovie);
+    .put(authUser, upload.single('thumbnail'), movieController.putMovie);
 
 router.route('/:id/recommend')
     .post(authUser, recommendController.addWatchedMovie)

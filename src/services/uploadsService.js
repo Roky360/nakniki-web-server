@@ -15,52 +15,6 @@ for (const dir of dirs) {
     }
 }
 
-
-// const videoStorage = multer.diskStorage({
-//     destination: (req, file, callback) => {
-//         callback(null, path.join(UPLOADS_DIR, '/videos')); // where movies will be stored
-//     },
-//     filename: (req, file, callback) => {
-//         callback(null, `${req.headers['movie_id']}.${file.originalname.split('.')[1]}`);
-//     }
-// });
-//
-// const uploadVideo = multer({
-//     storage: videoStorage,
-//     fileFilter: (req, file, callback) => {
-//         // check that the correct file type is passed
-//         const fileTypes = /mp4|gif|m4v|avi|mov/;
-//         const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-//         const mimeType = fileTypes.test(file.mimetype);
-//
-//         if (extName && mimeType) {
-//             callback(null, true);
-//         } else {
-//             callback('Only video files are allowed', false);
-//         }
-//     }
-// });
-//
-// const thumbStorage = multer.diskStorage({
-//     destination: (req, file, callback) => {
-//         callback(null, path.join(UPLOADS_DIR, '/thumbnails')); // where thumbnails will be stored
-//     },
-//     filename: (req, file, callback) => {
-//         callback(null, `${req.headers['movie_id']}.${file.originalname.split('.')[1]}`);
-//     }
-// });
-//
-// const uploadThumb = multer({
-//     storage: videoStorage,
-//     fileFilter: (req, file, cb) => {
-//         if (file.mimetype.startsWith("image/")) {
-//             cb(null, true);
-//         } else {
-//             cb('Only image files are allowed', false);
-//         }
-//     },
-// });
-
 // storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -94,4 +48,4 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage, fileFilter});
 
-module.exports = {upload, UPLOADS_DIR};
+module.exports = {upload, UPLOADS_DIR, MOVIES_DIR, THUMB_DIR};

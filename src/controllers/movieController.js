@@ -2,6 +2,8 @@ const movieService = require('../services/movieService');
 const categoryService = require('../services/categoryService');
 const {parseSchemaErrors} = require("../utils/errorUtils");
 const path = require("path");
+const fs = require("fs");
+const {THUMB_DIR, UPLOADS_DIR} = require("../services/uploadsService");
 
 /**
  * POST
@@ -110,7 +112,17 @@ const deleteMovie = async (req, res) => {
  * @returns movie, or an error, depending on input
  */
 const putMovie = async (req, res) => {
-    const result = await movieService.putMovie(req.params.id, req.body)
+    if (!req.file) {
+        return res.status(400).json({error: 'Thumbnail not provided or invalid.'});
+    }
+    // save original thumbnail to be deleted later
+    const originalThumbPath = await movieService.getMovieById(req.params.id)
+        .then(movie => movie.thumbnail.toString().replace("/api/uploads", ''))
+        .catch(_ => null);
+    // format thumbnail path
+    const pathFormatted = req.file.path.replace(/\\/g, '/');
+    const thumbnailRelPath = path.join("/api", pathFormatted.substring(pathFormatted.indexOf("/uploads"))).replace(/\\/g, '/');
+    const result = await movieService.putMovie(req.params.id, {...req.body, thumbnail: thumbnailRelPath})
 
     // upon error return the error message
     if (!result.success) {
@@ -118,12 +130,14 @@ const putMovie = async (req, res) => {
             return res.status(400).json({errors: result.msg});
         }
         return res.status(404).json({error: result.msg});
-    }
-    // upon success
-    if (result.created) {
-        res.status(201).location(`api/movies/${result.msg._id}`).json();
-    } else {
-        return res.status(204).json();
+    } else { // upon success
+        // delete thumbnail file
+        const toDeletePath = path.join(UPLOADS_DIR, originalThumbPath);
+        if (originalThumbPath) {
+            fs.unlink(toDeletePath, _ => {});
+        }
+
+        return res.status(204).json({});
     }
 }
 
