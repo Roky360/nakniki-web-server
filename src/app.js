@@ -32,6 +32,7 @@ app.use(express.json());
 app.use('/api', appRouter);
 
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static("public")); // serve the React website statically
 
 console.log(`Running on http://localhost:${process.env.PORT}`);
 app.listen(process.env.PORT);
