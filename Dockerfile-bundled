@@ -1,0 +1,31 @@
+# Stage 1: Build the React app
+FROM node:latest AS react-build
+
+WORKDIR /app
+COPY ./website/package*.json ./website/
+WORKDIR /app/website
+RUN npm install
+# copy code and public folder
+COPY ./website/src ./src
+COPY ./website/public ./public
+# create a build
+RUN npm run build
+
+# Stage 2: Set up the Express server
+FROM node:latest
+
+WORKDIR /app
+COPY ./package*.json ./
+RUN npm install
+# copy server files
+COPY ./src ./src
+COPY ./config ./config
+
+# Copy React build files from the first stage
+COPY --from=react-build /app/website/build ./public
+
+# get the env name and set it for npm
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV}
+
+CMD ["npm", "start"]
