@@ -45,10 +45,14 @@ const markAsWatched = async (userId, movieId) => {
         // decide whether to send POST or PATCH request
         if (userDoc.get('first_watch') === true) {
             // it's the user's first watch - POST
-            await sendRequest(`POST ${userRecomId} ${movieRecomId}`);
+            await sendRequest(`POST ${userRecomId} ${movieRecomId}`).then(async (res) => {
+                if (res.status !== 201) {
+                    await sendRequest(`PATCH ${userRecomId} ${movieRecomId}`);
+                }
+            });
             // set first_watch to false
             userDoc.first_watch = false;
-            await userDoc.save();
+            await userDoc.save({validateBeforeSave: false});
         } else {
             // PATCH
             await sendRequest(`PATCH ${userRecomId} ${movieRecomId}`);
@@ -127,15 +131,23 @@ const recommend = async (userId, movieId) => {
     const movieRecomId = movieDoc.get('recom_id');
     try {
         const res = await sendRequest(`GET ${userRecomId} ${movieRecomId}`);
-        // convert the recommended movies to an array of numbers
-        const movieRecomIds = res.payload.split(' ')
-            .slice(0, -1)
-            .map(e => Number(e));
+        // if we got a valid response and there are recommendations in the "payload"
+        if (res.status === 200 && res.payload) {
+            // convert the recommended movies to an array of numbers
+            const movieRecomIds = res.payload.split(' ')
+                .slice(0, -1)
+                .map(e => Number(e));
 
-        return {
-            success: true,
-            movies: await getMoviesByRecomId(movieRecomIds)
-        };
+            return {
+                success: true,
+                movies: await getMoviesByRecomId(movieRecomIds)
+            };
+        } else {
+            return {
+                success: true,
+                movies: []
+            }
+        }
     } catch (err) {
         return {
             success: false,
