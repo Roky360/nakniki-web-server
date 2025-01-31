@@ -8,3 +8,17 @@ services:
       - NODE_ENV=${NODE_ENV}  # pass the env name to docker
     ports:  # expose the app port
       - "${PORT}:${PORT}"
+
+  website-bundled:
+    build:
+      context: .
+      dockerfile: Dockerfile-bundled
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - uploads:/app/src/uploads
+
+volumes:
+  uploads:

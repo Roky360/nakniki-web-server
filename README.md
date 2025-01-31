@@ -4,11 +4,15 @@ _Avi Ben David, Eden Shaked, Kfir Eitan._
 
 This is the web server of the Netflix project.
 
+> **Important:** The wiki for the project is in the [nakniki-website](https://github.com/Roky360/nakniki-website) repository.
+
 ## Important links
 
-* [GitHub (This repo)](https://github.com/Roky360/nakniki-web-server)
-* [GitHub (C++ Recommendation server)](https://github.com/Roky360/project-netflix)
 * [Jira](https://edenshkd.atlassian.net/jira/software/projects/NP/boards/2/backlog)
+* [GitHub - C++ Recommendation server](https://github.com/Roky360/project-netflix)
+* [GitHub - Express web server (this repo)](https://github.com/Roky360/nakniki-web-server)
+* [GitHub - React website](https://github.com/Roky360/nakniki-website)
+* [GitHub - Android app](https://github.com/Roky360/nakniki-app)
 
 ---
 
@@ -33,6 +37,7 @@ This is the web server of the Netflix project.
     - The `MONGODB_URI` is MongoDB connection string **with the database name at the end**. For example: `mongodb://host.docker.internal:27017/my_db`
     - `PORT` is the port that the web server will run on.
     - `RECOM_URL` is the recommendation server url. For example, if you set it to run on port 8080, the RECOM_URL should be: `host.docker.internal:8080`.
+    - `JWT_SECRET` is the secret that the server will use to sign JWT auth tokens. Put your secret (some string) in there.
     
 4. **Run with docker:** run the following command to run the web server, with specifying the path to the env file you just set up, for example:
     ```bash
