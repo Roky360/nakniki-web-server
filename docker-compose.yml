@@ -9,7 +9,7 @@ services:
     ports:  # expose the app port
       - "${PORT}:${PORT}"
 
-  website:
+  website-bundled:
     build:
       context: .
       dockerfile: Dockerfile-bundled
